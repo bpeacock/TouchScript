@@ -1,14 +1,12 @@
-var subview  = require('subview'),
-    editor   = require('Editor/Editor').spawn(),
-    tray     = require('Tray/Tray').spawn(),
-    console  = require('./console');
-
+var subview = require('subview');
 require('./main.less');
 
 module.exports = subview('main', {
-    init: function() {
-        this.$wrapper
-            .append(editor.$wrapper, tray.$wrapper, console.$wrapper);
-    },
-    template: require('main.hb')
+    template: require('./main.handlebars'),
+    subviews: {
+        Toolbar:    require('./Toolbar/Toolbar'),
+        editor:     require('./editor'),
+        Tray:       require('./Tray/Tray'),
+        terminal:    require('./terminal')
+    }
 });

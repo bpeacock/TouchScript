@@ -1,0 +1,31 @@
+.panel {
+    display: inline-block;
+    position: relative;
+    width: 300px;
+    height: 400px;
+    vertical-align: top;
+    border: 1px solid #DBDBDB;
+}
+
+@trayHeight: 150px;
+@toolbarHeight: 30px;
+
+.view-Toolbar {
+    position: absolute;
+    height: @toolbarHeight;
+    width: 100%;
+}
+
+.view-Editor {
+    position: absolute;
+    bottom: @trayHeight;
+    top: @toolbarHeight;
+    width: 100%;
+}
+
+.view-Tray {
+    position: absolute;
+    height: @trayHeight;
+    bottom: 0;
+    width: 100%;
+}

@@ -4,27 +4,26 @@ module.exports = function(grunt) {
         browserify: {
             dist: {
                 files: {
-                    //'dist/lib.js':          ['src/main.js'],
-                    'examples/build.js':    ['examples/example.js']
+                    'PhoneGap/www/js/build.js': ['PhoneGap/www/js/index.js']
                 },
                 options: {
-                    //standalone: '',
-                    transform: ['grunt-less-browserify']
+                    transform: ['grunt-less-browserify', 'browserify-handlebars']
                 }
             },
             test: {
                 files: {
-                    'test/build.js':        ['test/test.js']
+                    'examples/build.js':        ['examples/example.js'],
+                    'test/build.js':            ['test/test.js']
                 },
                 options: {
-                    transform: ['grunt-less-browserify'],
+                    transform: ['grunt-less-browserify', 'browserify-handlebars'],
                     debug:     true
                 }
             }
         },
         watch: {
-            files: [ "src/**/*", "examples/example.js"],
-            tasks: [ 'browserify:dist' ]
+            files: ["views/**/*", "models/**/*", "examples/example.js"],
+            tasks: ['browserify:test']
         },
         jshint: {
             options: {
@@ -35,26 +34,31 @@ module.exports = function(grunt) {
             },
             uses_defaults: ['src/**/*.js']
         },
-        uglify: {
-            dist: {
-                files: {
-                    'dist/lib.min.js': ['dist/lib.js']
-                },
-                options: {
-                    sourceMap: true
-                }
-            }
-        },
         qunit: {
             files: ['test/index.html']
+        },
+        lessBrowserify: {
+            imports: ['node_modules/helpers.less/helpers.less']
+        },
+        shell: {
+            phonegap: {
+                command: "cd PhoneGap; phonegap run ios",
+                options: {                      // Options
+                    stdout: true
+                }
+            }
         }
     });
 
     grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-qunit');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-shell');
+
+    grunt.registerTask('phonegap', [
+        'shell:phonegap'
+    ]);
 
     grunt.registerTask('test', [
         'browserify:test',
@@ -65,7 +69,7 @@ module.exports = function(grunt) {
     grunt.registerTask('build', [
         'test',
         'browserify:dist',
-        'uglify'
+        'phonegap'
     ]);
 };
 

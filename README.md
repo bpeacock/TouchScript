@@ -2,6 +2,8 @@ New Library
 ===========
 
 npm install ../subview
+npm install ../on3/onDrag
+npm install ../helpers.less
 
 Usage
 -----
