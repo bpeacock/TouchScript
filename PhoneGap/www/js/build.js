@@ -22,19 +22,7 @@ window.app = {
     }
 };
 
-},{"../../../views/main.js":100,"subview":26}],2:[function(require,module,exports){
-var Environment = function() {
-
-};
-
-Environment.prototype = {
-    clear: function() {
-        
-    }
-};
-
-module.exports = Environment;
-},{}],3:[function(require,module,exports){
+},{"../../../views/main.js":125,"subview":25}],2:[function(require,module,exports){
 "use strict";
 /*globals Handlebars: true */
 var base = require("./handlebars/base");
@@ -67,7 +55,7 @@ var Handlebars = create();
 Handlebars.create = create;
 
 exports["default"] = Handlebars;
-},{"./handlebars/base":4,"./handlebars/exception":5,"./handlebars/runtime":6,"./handlebars/safe-string":7,"./handlebars/utils":8}],4:[function(require,module,exports){
+},{"./handlebars/base":3,"./handlebars/exception":4,"./handlebars/runtime":5,"./handlebars/safe-string":6,"./handlebars/utils":7}],3:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -248,7 +236,7 @@ exports.log = log;var createFrame = function(object) {
   return obj;
 };
 exports.createFrame = createFrame;
-},{"./exception":5,"./utils":8}],5:[function(require,module,exports){
+},{"./exception":4,"./utils":7}],4:[function(require,module,exports){
 "use strict";
 
 var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
@@ -277,7 +265,7 @@ function Exception(message, node) {
 Exception.prototype = new Error();
 
 exports["default"] = Exception;
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -415,7 +403,7 @@ exports.program = program;function invokePartial(partial, name, context, helpers
 exports.invokePartial = invokePartial;function noop() { return ""; }
 
 exports.noop = noop;
-},{"./base":4,"./exception":5,"./utils":8}],7:[function(require,module,exports){
+},{"./base":3,"./exception":4,"./utils":7}],6:[function(require,module,exports){
 "use strict";
 // Build out our basic SafeString type
 function SafeString(string) {
@@ -427,7 +415,7 @@ SafeString.prototype.toString = function() {
 };
 
 exports["default"] = SafeString;
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 /*jshint -W004 */
 var SafeString = require("./safe-string")["default"];
@@ -504,12 +492,12 @@ exports.escapeExpression = escapeExpression;function isEmpty(value) {
 }
 
 exports.isEmpty = isEmpty;
-},{"./safe-string":7}],9:[function(require,module,exports){
+},{"./safe-string":6}],8:[function(require,module,exports){
 // Create a simple path alias to allow browserify to resolve
 // the runtime on a supported path.
 module.exports = require('./dist/cjs/handlebars.runtime');
 
-},{"./dist/cjs/handlebars.runtime":3}],10:[function(require,module,exports){
+},{"./dist/cjs/handlebars.runtime":2}],9:[function(require,module,exports){
 (function (global){
 (function(root) {
     var unopinionate = {
@@ -536,7 +524,7 @@ module.exports = require('./dist/cjs/handlebars.runtime');
 })(typeof window != 'undefined' ? window : global);
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var $ = require('unopinionate').selector;
 
 var $document   = $(document),
@@ -677,9 +665,9 @@ click._getPos = function(e) {
 module.exports = click;
 
 
-},{"unopinionate":10}],12:[function(require,module,exports){
-module.exports=require(10)
-},{}],13:[function(require,module,exports){
+},{"unopinionate":9}],11:[function(require,module,exports){
+module.exports=require(9)
+},{}],12:[function(require,module,exports){
 var $ = require('unopinionate').selector,
     $document = $(document);
 
@@ -693,7 +681,7 @@ Drag.prototype = {
 
 module.exports = Drag;
 
-},{"unopinionate":12}],14:[function(require,module,exports){
+},{"unopinionate":11}],13:[function(require,module,exports){
 var $ = require('unopinionate').selector;
 
 var Drop = function(selector, config) {
@@ -705,7 +693,7 @@ Drop.prototype = {
 };
 
 module.exports = Drop;
-},{"unopinionate":12}],15:[function(require,module,exports){
+},{"unopinionate":11}],14:[function(require,module,exports){
 var Drag = require("./Drag"),
     Drop = require("./Drop");
 
@@ -742,9 +730,9 @@ drag.drop = function(selector, config) {
 
 module.exports = drag;
 
-},{"./Drag":13,"./Drop":14}],16:[function(require,module,exports){
-module.exports=require(10)
-},{}],17:[function(require,module,exports){
+},{"./Drag":12,"./Drop":13}],15:[function(require,module,exports){
+module.exports=require(9)
+},{}],16:[function(require,module,exports){
 var $ = require('unopinionate').selector,
         specialKeys = require('./specialKeys');
 
@@ -884,7 +872,7 @@ Event.prototype = {
 module.exports = Event;
 
 
-},{"./specialKeys":19,"unopinionate":16}],18:[function(require,module,exports){
+},{"./specialKeys":18,"unopinionate":15}],17:[function(require,module,exports){
 var Event = require('./Event.js'),
     events = [];
 
@@ -917,7 +905,7 @@ key._createEvent = function(selector) {
 
 module.exports = key;
 
-},{"./Event.js":17}],19:[function(require,module,exports){
+},{"./Event.js":16}],18:[function(require,module,exports){
 //Adopted from [jQuery hotkeys](https://github.com/jeresig/jquery.hotkeys/blob/master/jquery.hotkeys.js)
 
 module.exports = {
@@ -984,6 +972,79 @@ module.exports = {
     222: "'",
     224: "meta"
 };
+
+},{}],19:[function(require,module,exports){
+
+var style = document.createElement('p').style
+var prefixes = 'O ms Moz webkit'.split(' ')
+var upper = /([A-Z])/g
+
+var memo = {}
+
+/**
+ * memoized `prefix`
+ *
+ * @param {String} key
+ * @return {String}
+ * @api public
+ */
+
+module.exports = exports = function(key){
+  return key in memo
+    ? memo[key]
+    : memo[key] = prefix(key)
+}
+
+exports.prefix = prefix
+exports.dash = dashedPrefix
+
+/**
+ * prefix `key`
+ *
+ *   prefix('transform') // => webkitTransform
+ *
+ * @param {String} key
+ * @return {String}
+ * @api public
+ */
+
+function prefix(key){
+  // camel case
+  key = key.replace(/-([a-z])/g, function(_, char){
+    return char.toUpperCase()
+  })
+
+  // without prefix
+  if (style[key] !== undefined) return key
+
+  // with prefix
+  var Key = capitalize(key)
+  var i = prefixes.length
+  while (i--) {
+    var name = prefixes[i] + Key
+    if (style[name] !== undefined) return name
+  }
+
+  throw new Error('unable to prefix ' + key)
+}
+
+function capitalize(str){
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+/**
+ * create a dasherized prefix
+ *
+ * @param {String} key
+ * @return {String}
+ * @api public
+ */
+
+function dashedPrefix(key){
+  key = prefix(key)
+  if (upper.test(key)) key = '-' + key.replace(upper, '-$1')
+  return key.toLowerCase()
+}
 
 },{}],20:[function(require,module,exports){
 /*
@@ -2447,8 +2508,6 @@ module.exports = {
 }).call(this);
 
 },{}],22:[function(require,module,exports){
-module.exports=require(10)
-},{}],23:[function(require,module,exports){
 var log = require("loglevel"),
     _   = require("underscore");
 
@@ -2631,9 +2690,9 @@ State.prototype = {
 module.exports = State;
 
 
-},{"loglevel":20,"underscore":21}],24:[function(require,module,exports){
-var _    = require('underscore'),
-    log  = require("loglevel");
+},{"loglevel":20,"underscore":21}],23:[function(require,module,exports){
+var _           = require('underscore'),
+    log         = require('loglevel');
 
 var View = function() {};
 
@@ -2656,6 +2715,8 @@ View.prototype = {
 
     /*** Initialization Functions (should be configured but will be manipulated when defining the subview) ***/
     config: function(config) { //Runs before render
+        this.listeners = {};
+
         for(var i=0; i<this.configFunctions.length; i++) {
             this.configFunctions[i].apply(this, [config]);
         }
@@ -2757,36 +2818,121 @@ View.prototype = {
         return this;
     },
 
-    /*** State API ***/
-    /*set: function(key, value) {
-        this.state.set(key, value);
+    /*** Event API ***/
+    trigger: function(name, args) {
+        var self = this;
+        args = args || [];
+        
+        //Broadcast in all directions
+        var directions = {
+            up:     'find',
+            down:   'parents',
+            across: 'siblings'
+        };
+
+        _.find(directions, function(jqFunc, dir) {
+            var selector = '.listener-'+name+'-'+dir;
+            
+            //Select $wrappers with the right listener class in the right direction
+            var $els = self.$wrapper[jqFunc](selector + ', ' + selector+'-'+self.type),
+                i    = $els.length;
+
+            while(i--) {
+                //Get the actual subview
+                var recipient = subview($els[i]);
+
+                //Check for a subview type specific callback
+                var typedCallback = recipient.listeners[self.type + ":" + name + ":" + dir];
+                if(typedCallback) {
+                    return typedCallback.apply(self, [args]) === false; //Breaks if callback returns false
+                }
+
+                //Check for a general event callback
+                var untypedCallback = recipient.listeners[name + ":" + dir];
+                if(untypedCallback) {
+                    return untypedCallback.apply(self, [args]) === false; //Breaks if callback returns false
+                }
+            }
+        });
+    },
+    listen: function(event, callback, direction) {
+        //Parse the event format "[view type]:[event name]"
+        eventParts = event.split(':');
+        
+        var eventName = eventParts.length > 1 ? eventParts[1] : eventParts[0],
+            viewType  = eventParts.length > 1 ? eventParts[0] : null;
+
+        //Add the listener class
+        this.$wrapper.addClass('listener-'+eventName+'-'+direction+(viewType ? '-'+viewType : ''));
+
+        //Save the callback
+        this.listeners[event+":"+direction] = callback;
+
         return this;
     },
-    get: function(key) {
-        return this.state.get(key);
-    },
-    bind: function(key, callback) {
-        this.state.bind(key, callback);
-        return callback;
-    },
-    unbind: function(key) {
-        this.state.unbind(key);
+
+    listenUp: function(event, callback) {
+        var self = this;
+
+        if(typeof event == 'string') {
+            this.listen(event, callback, 'up');
+        }
+        else {
+            _.each(event, function(callback, event) {
+                self.listen(event, callback, 'up');
+            });
+        }
+        
         return this;
     },
-    trigger: function(key, value) {
-        this.state.trigger(key, value);
-        return this;
-    },*/
-    tellParent: function(type, key, value) {
-        this.state.tellParent(type, key, value);
+    listenDown: function(event, callback) {
+        var self = this;
+
+        if(typeof event == 'string') {
+            this.listen(event, callback, 'down');
+        }
+        else {
+            _.each(event, function(callback, event) {
+                self.listen(event, callback, 'down');
+            });
+        }
+
         return this;
     },
-    askParent: function(type, key) {
-        return this.state.askParent(type, key);
-    },
-    listen: function(type, key, value) {
-        this.state.listen(type, key, value);
+    listenAcross: function(event, callback) {
+        var self = this;
+
+        if(typeof event == 'string') {
+            this.listen(event, callback, 'across');
+        }
+        else {
+            _.each(event, function(callback, event) {
+                self.listen(event, callback, 'across');
+            });
+        }
+
         return this;
+    },
+
+    /*** Traversing ***/
+    parent: function(type) {
+        var $el = this.$wrapper.closest('.' + (type ? this._viewCssPrefix + type : 'view'));
+        
+        if($el && $el.length > 0) {
+            return $el[0][subview._domPropertyName];
+        }
+        else {
+            return null;
+        }
+    },
+    next: function(type) {
+
+    },
+    prev: function(type) {
+
+    },
+    children: function(type) {
+
     },
 
     /*** Classes ***/
@@ -2830,9 +2976,7 @@ View.prototype = {
 module.exports = View;
 
 
-
-
-},{"loglevel":20,"underscore":21}],25:[function(require,module,exports){
+},{"loglevel":20,"underscore":21}],24:[function(require,module,exports){
 var State = require("./State"),
     $     = require("unopinionate").selector;
 
@@ -2909,7 +3053,7 @@ ViewPool.prototype = {
 
 module.exports = ViewPool;
 
-},{"./State":23,"unopinionate":22}],26:[function(require,module,exports){
+},{"./State":22,"unopinionate":26}],25:[function(require,module,exports){
 var _               = require("underscore"),
     log             = require("loglevel"),
     $               = require("unopinionate").selector,
@@ -3017,7 +3161,7 @@ subview.lookup = function(name) {
 };
 
 subview._validateName = function(name) {
-    if(!name.match(/^[a-zA-Z0-9]+$/)) {
+    if(!name.match(/^[a-zA-Z0-9\-_]+$/)) {
         log.error("subview name '" + name + "' is not alphanumeric.");
         return false;
     }
@@ -3036,41 +3180,399 @@ window.subview = module.exports = subview;
 /*** Startup Actions ***/
 $(function() {
     if(!subview.noInit) {
-        console.log("HERE");
         subview.load();
     }
 });
 
 
+},{"./View":23,"./ViewPool":24,"loglevel":20,"underscore":21,"unopinionate":26}],26:[function(require,module,exports){
+module.exports=require(9)
+},{}],27:[function(require,module,exports){
+var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, functionType="function";
 
-},{"./View":24,"./ViewPool":25,"loglevel":20,"underscore":21,"unopinionate":22}],27:[function(require,module,exports){
+
+  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.Toolbar)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n";
+  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.code)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n";
+  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.Tray)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  return buffer;
+  });
+},{"handlebars/runtime":8}],28:[function(require,module,exports){
+var subview = require('subview');
+require('./Editor.less');
+
+module.exports = subview('Editor', {
+    template: require('./Editor.handlebars'),
+    subviews: {
+        Toolbar:    require('./Toolbar/Toolbar'),
+        code:       require('./code'),
+        Tray:       require('./Tray/Tray')
+    }
+});
+
+},{"./Editor.handlebars":27,"./Editor.less":29,"./Toolbar/Toolbar":31,"./Tray/Tray":34,"./code":36,"subview":25}],29:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Toolbar{position:absolute;height:50px;width:100%}.view-Code{position:absolute;bottom:150px;top:50px;width:100%}.view-Tray{position:absolute;height:150px;bottom:0;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],30:[function(require,module,exports){
+var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  
+
+
+  return "<button class='Editor-Toolbar-open'>Open</button>\n\n<button class='Editor-Toolbar-run'>&#9658;</button>";
+  });
+},{"handlebars/runtime":8}],31:[function(require,module,exports){
+var Toolbar  = require('../../UI/Toolbar/Toolbar'),
+    click    = require('onclick'),
+    code     = require('../code'),
+    terminal = require('../../Run/terminal');
+
+require('./Toolbar.less');
+
+module.exports = Toolbar.extend('Editor-Toolbar', {
+    init: function() {
+        var self = this;
+
+        click({
+            '.Editor-Toolbar-run': function() {
+                terminal.clear();
+
+                setTimeout(function() {
+                    self.trigger('run', function() {
+                        code.run();
+                    });
+                }, 0);
+            },
+            '.Editor-Toolbar-open': function() {
+                self.trigger('open');
+            }
+        });
+    },
+    template: require('./Toolbar.handlebars')
+});
+
+},{"../../Run/terminal":51,"../../UI/Toolbar/Toolbar":120,"../code":36,"./Toolbar.handlebars":30,"./Toolbar.less":32,"onclick":10}],32:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Editor-Toolbar-run{float:right}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],33:[function(require,module,exports){
+var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var stack1, functionType="function", escapeExpression=this.escapeExpression, self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = "", stack1, helper;
+  buffer += "\n    <div class='Tray-Button' data-type='";
+  if (helper = helpers.type) { stack1 = helper.call(depth0, {hash:{},data:data}); }
+  else { helper = (depth0 && depth0.type); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
+  buffer += escapeExpression(stack1)
+    + "'>";
+  if (helper = helpers.name) { stack1 = helper.call(depth0, {hash:{},data:data}); }
+  else { helper = (depth0 && depth0.name); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "</div>\n";
+  return buffer;
+  }
+
+  stack1 = helpers.each.call(depth0, (depth0 && depth0.buttons), {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { return stack1; }
+  else { return ''; }
+  });
+},{"handlebars/runtime":8}],34:[function(require,module,exports){
+var subview = require('subview'),
+    buttons = require('../../UI/Code/Tokens/index'),
+    drag    = require('ondrag'),
+    click   = require('onclick'),
+    cursor  = require('../../UI/Code/cursor');
+
+require('./Tray.less');
+
+/*** Setup Dragging ***/
+
+drag('.Tray-Button', {
+    helper: "clone",
+    start: function() {
+        
+    },
+    move: function() {
+        
+    },
+    stop: function() {
+        var type = this.getAttribute('data-type');
+    }
+});
+
+click('.Tray-Button', function(e) {
+    e.preventDefault();
+    
+    var type = this.getAttribute('data-type');
+    cursor.paste(type);
+});
+
+/*** Define the Subview ***/
+
+module.exports = subview('Tray', {
+    init: function() {
+        
+    },
+    template: require("./Tray.handlebars"),
+    data: function() {
+        var data = [];
+
+        var i = buttons.length;
+        while(i--) {
+            var Button = buttons[i];
+
+            data.push({
+                name: Button.View.prototype.meta.display || Button.View.prototype.template,
+                type: Button.type
+            });
+        }
+
+        return {
+            buttons: data
+        };
+    }
+});
+},{"../../UI/Code/Tokens/index":115,"../../UI/Code/cursor":116,"./Tray.handlebars":33,"./Tray.less":35,"onclick":10,"ondrag":14,"subview":25}],35:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Tray{background:#F1F0F0;padding:5px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.Tray-Button{display:inline-block;padding:2px 5px;margin:2px 0;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;background:#1075F6;color:#fff;cursor:pointer}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],36:[function(require,module,exports){
+var code = require('../UI/Code/Code').spawn();
+
+code.configure({
+    terminal: require('../Run/terminal'),
+    onError: function() {
+        this.trigger('edit');
+    }
+});
+
+module.exports = code;
+
+},{"../Run/terminal":51,"../UI/Code/Code":52}],37:[function(require,module,exports){
+var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var stack1, functionType="function";
+
+
+  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.Toolbar)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
+  if(stack1 || stack1 === 0) { return stack1; }
+  else { return ''; }
+  });
+},{"handlebars/runtime":8}],38:[function(require,module,exports){
+var subview = require('subview');
+
+require('./Files.less');
+
+module.exports = subview('Files', {
+    template: require('./Files.handlebars'),
+    subviews: {
+        Toolbar: require('./Toolbar/Toolbar')
+    }
+});
+
+},{"./Files.handlebars":37,"./Files.less":39,"./Toolbar/Toolbar":41,"subview":25}],39:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],40:[function(require,module,exports){
+var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  
+
+
+  return "<button class='Files-Toolbar-new'>New</button>\n\n<button class='Files-Toolbar-delete'>Delete</button>";
+  });
+},{"handlebars/runtime":8}],41:[function(require,module,exports){
+var Toolbar  = require('../../UI/Toolbar/Toolbar'),
+    click    = require('onclick');
+
+require('./Toolbar.less');
+
+module.exports = Toolbar.extend('Files-Toolbar', {
+    init: function() {
+        var self = this;
+
+        click({
+            '.Files-Toolbar-new': function() {
+                self.trigger('edit');
+            },
+            '.Files-Toolbar-delete': function() {
+                
+            }
+        });
+    },
+    template: require('./Toolbar.handlebars')
+});
+
+},{"../../UI/Toolbar/Toolbar":120,"./Toolbar.handlebars":40,"./Toolbar.less":42,"onclick":10}],42:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Files-Toolbar-delete{float:right}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],43:[function(require,module,exports){
+var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, functionType="function";
+
+
+  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.Toolbar)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n";
+  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.terminal)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  return buffer;
+  });
+},{"handlebars/runtime":8}],44:[function(require,module,exports){
+var subview = require('subview');
+
+require('./Run.less');
+
+module.exports = subview('Run', {
+    template: require('./Run.handlebars'),
+    subviews: {
+        Toolbar:  require('./Toolbar/Toolbar'),
+        terminal: require('./terminal')
+    }
+});
+
+},{"./Run.handlebars":43,"./Run.less":45,"./Toolbar/Toolbar":49,"./terminal":51,"subview":25}],45:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Run-Terminal{position:absolute;top:50px;bottom:0;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],46:[function(require,module,exports){
+var subview = require('subview'),
+    key     = require('onkey');
+
+require('./Terminal.less');
+
+module.exports = subview("Run-Terminal", {
+    print: function(string) {
+        this.$wrapper.append("<div class='Terminal-line'>"+string+"</div>");
+    },
+    prompt: function(string, callback) {
+        var $input = $("<input type='text' class='Terminal-prompt-input' />");
+
+        $("<div class='Terminal-prompt'>"+string+": </div>")
+            .append($input)
+            .appendTo(this.$wrapper);
+        
+        key($input).down({
+            'enter': function() {
+                callback($input.val());
+                this.destroy();
+            }
+        });
+    },
+    clear: function() {
+        this.html('');
+        return this;
+    }
+});
+
+},{"./Terminal.less":47,"onkey":17,"subview":25}],47:[function(require,module,exports){
+module.exports=require(39)
+},{}],48:[function(require,module,exports){
+var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  
+
+
+  return "<button class='Run-Toolbar-exit'>Exit</button>\n";
+  });
+},{"handlebars/runtime":8}],49:[function(require,module,exports){
+var Toolbar  = require('../../UI/Toolbar/Toolbar'),
+    click    = require('onclick');
+
+require('./Toolbar.less');
+
+module.exports = Toolbar.extend('Run-Toolbar', {
+    init: function() {
+        var self = this;
+
+        click({
+            '.Run-Toolbar-exit': function() {
+                self.trigger('edit');
+            }
+        });
+    },
+    template: require('./Toolbar.handlebars')
+});
+
+},{"../../UI/Toolbar/Toolbar":120,"./Toolbar.handlebars":48,"./Toolbar.less":50,"onclick":10}],50:[function(require,module,exports){
+module.exports=require(39)
+},{}],51:[function(require,module,exports){
+module.exports = require('./Terminal/Terminal').spawn();
+
+},{"./Terminal/Terminal":46}],52:[function(require,module,exports){
+var Block = require('./Components/Block');
+require('./Code.less');
+
+var noop = function() {};
+
+module.exports = Block.extend('Code', {
+    init: function() {
+        this.focus();
+    },
+    configure: function(config) {
+        this.terminal = config.terminal || null;
+        this.onError  = config.onError  || noop;
+        return this;
+    },
+    beforeRun: function() {
+        this.environment.clear();
+    },
+
+    /*** Events ***/
+    onError: noop
+});
+
+},{"./Code.less":53,"./Components/Block":54}],53:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{overflow:hidden}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],54:[function(require,module,exports){
 var subview     = require('subview'),
-    Line        = require('./Line.js'),
-    cursor      = require('./cursor'),
+    cursor      = require('../cursor'),
     Line        = require('./Line'),
-    Environment = require('../../models/Environment');
+    Environment = require('./EnvironmentModel');
 
 require('./Block.less');
 
-module.exports = subview('Block', {
+module.exports = subview('Code-Block', {
     init: function() {
+        var self = this;
+
         this.environment = new Environment();
         this.empty();
+
+        this.listenDown('Code-Cursor:paste', function() {
+            var last = subview(self.$wrapper.children().last());
+
+            if(!last.isEmpty()) {
+                self.addLine();
+            }
+        });
     },
     empty: function() {
         this.html('');
-        var line = Line.spawn();
-        this.$wrapper.append(line.$wrapper);
+        this.addLine();
 
         return this;
+    },
+    addLine: function(i) {
+        var line = Line.spawn();
+        this.$wrapper.append(line.$wrapper);
+        return line;
     },
     focus: function() {
         subview(this.$wrapper.children().last()).focus();
         return this;
     },
+    beforeRun: function() {},
     run: function() {
-        //Clear the environment
-        this.environment.clear();
+        this.beforeRun();
 
         //Run every line
         var children = this.$wrapper.children();
@@ -3082,33 +3584,34 @@ module.exports = subview('Block', {
     }
 });
 
-},{"../../models/Environment":2,"./Block.less":28,"./Line":33,"./Line.js":33,"./cursor":35,"subview":26}],28:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Block{background:#fff;-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],29:[function(require,module,exports){
-var Block = require('./Block');
-require('./Editor.less');
+},{"../cursor":116,"./Block.less":55,"./EnvironmentModel":56,"./Line":59,"subview":25}],55:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Block{background:#fff;-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],56:[function(require,module,exports){
+var Environment = function() {
 
-module.exports = Block.extend('Editor', {
-    init: function() {
-        this.focus();
+};
+
+Environment.prototype = {
+    clear: function() {
+        
     }
-});
+};
 
-},{"./Block":27,"./Editor.less":30}],30:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Editor{overflow:hidden}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],31:[function(require,module,exports){
+module.exports = Environment;
+},{}],57:[function(require,module,exports){
 var subview = require('subview'),
-    cursor  = require('./cursor'),
-    click   = require('onclick');
+    cursor  = require('../cursor'),
+    click   = require('onclick'),
+    error   = require('./error');
 
 require('./Field.less');
 
-$(document).on('mousedown touchstart', '.view-Field', function(e) {
+$(document).on('mousedown touchstart', '.view-Code-Field', function(e) {
     e.stopPropagation();
     subview(this).focus();
 });
 
-module.exports = subview('Field', {
+module.exports = subview('Code-Field', {
     init: function() {
 
     },
@@ -3137,7 +3640,7 @@ module.exports = subview('Field', {
             else if(token.isLiteral) {
                 stack.push(token.val());
             }
-            else if(token.type != 'Cursor') {
+            else if(token.type != 'Code-Cursor') {
                 console.error("Token not recognized");
             }
         }
@@ -3196,104 +3699,45 @@ module.exports = subview('Field', {
             return stack[0];
         }
     },
-    error: function(msg) {
-        console.error(msg);
-    }
+    error: error
 });
 
-},{"./Field.less":32,"./cursor":35,"onclick":11,"subview":26}],32:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],33:[function(require,module,exports){
+},{"../cursor":116,"./Field.less":58,"./error":61,"onclick":10,"subview":25}],58:[function(require,module,exports){
+module.exports=require(39)
+},{}],59:[function(require,module,exports){
 var Field = require('./Field');
 
 require('./Line.less');
 
-module.exports = Field.extend('Line', {
-    
-});
-
-},{"./Field":31,"./Line.less":34}],34:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Editor{counter-reset:lineNumber}.view-Line{position:relative;min-height:1.2em;padding-left:30px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.view-Line:before{font-family:Consolas,monaco,monospace;counter-increment:lineNumber;content:counter(lineNumber);position:absolute;height:100%;width:34px;left:-4px;padding-left:8px;padding-top:.1em;background:#F1F0F0;border-right:1px solid #CCC;color:#555;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],35:[function(require,module,exports){
-var subview = require('subview');
-
-require('./cursor.less');
-
-var Cursor = subview('Cursor', {
-    init: function() {
-        var self = this;
-
-        $(document).on('focus', 'input, div', function() {
-            self.$wrapper.hide();
-        });
-    },
-    paste: function(type) {
-        //Make sure the cursor is shown
-        this.$wrapper.show();
-        $(':focus').blur();
-
-        //Get the type
-        var Type = subview.lookup(type);
-
-        if(!Type) {
-            console.error("Type '"+type+"' does not exist");
-        }
-
-        //Validate Position
-        if(Type.View.prototype.validatePosition(this)) {
-
-            //Paste the function
-            var command = Type.spawn();
-            
-            this.$wrapper.before(command.$wrapper);
-            command.focus();
-        }
-        
-        return this;
-    },
-    error: function(msg) {
-        console.error('Cursor: '+msg);
+module.exports = Field.extend('Code-Line', {
+    isEmpty: function() {
+        return this.$wrapper.children('.view-Code-Token').length === 0;
     }
 });
 
-module.exports = Cursor.spawn();
+},{"./Field":57,"./Line.less":60}],60:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{counter-reset:lineNumber}.view-Code-Line{position:relative;min-height:1.2em;padding-left:30px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.view-Code-Line:before{font-family:Consolas,monaco,monospace;counter-increment:lineNumber;content:counter(lineNumber);position:absolute;height:100%;width:34px;left:-4px;padding-left:8px;padding-top:.1em;background:#F1F0F0;border-right:1px solid #CCC;color:#555;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],61:[function(require,module,exports){
+var Tooltip = require('../../Tooltip/Tooltip'),
+    subview = require('subview');
 
-},{"./cursor.less":36,"subview":26}],36:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@-webkit-keyframes flash{0%,100%{opacity:1}50%{opacity:0}}.view-cursor{position:relative;display:inline-block;width:2px;height:1.1em;margin:-.05em -1px;top:.05em;background:#1279FC;-webkit-animation:flash 1s infinite}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],37:[function(require,module,exports){
-var subview = require('subview'),
-    key     = require('onkey');
+require("./error.less");
 
-require('./Terminal.less');
+var Err = Tooltip.extend('Code-Error');
 
-module.exports = subview("Terminal", {
-    print: function(string) {
-        this.$wrapper.append("<div class='Terminal-line'>"+string+"</div>");
-    },
-    prompt: function(string, callback) {
-        var $input = $("<input type='text' class='Terminal-prompt-input' />");
+module.exports = function(msg) {
+    this.parent('Code').onError();
 
-        $("<div class='Terminal-prompt'>"+string+": </div>")
-            .append($input)
-            .appendTo(this.$wrapper);
-        
-        key($input).down({
-            'enter': function() {
-                callback($input.val());
-                this.destroy();
-            }
-        });
-    },
-    clear: function() {
-        this.html('');
-        return this;
-    }
-});
+    return Err.spawn({
+        msg:  msg,
+        $el:  this.$wrapper
+    });
+};
 
-},{"./Terminal.less":38,"onkey":18,"subview":26}],38:[function(require,module,exports){
-module.exports=require(32)
-},{}],39:[function(require,module,exports){
-var Field = require('../Editor/Field');
+},{"../../Tooltip/Tooltip":123,"./error.less":62,"subview":25}],62:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Error{background:#F70000;color:#fff;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding:2px 6px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],63:[function(require,module,exports){
+var Field = require('../Components/Field');
 require('./Argument.less');
 
 module.exports = Field.extend('Argument', {
@@ -3305,12 +3749,12 @@ module.exports = Field.extend('Argument', {
     tagName: 'span'
 });
 
-},{"../Editor/Field":31,"./Argument.less":40}],40:[function(require,module,exports){
+},{"../Components/Field":57,"./Argument.less":64}],64:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Argument{background:#fff;min-width:15px;min-height:1.2em;margin:0 2px;padding:.1em 2px;-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],41:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 var Control  = require('../Control'),
     Argument = require('../../Argument'),
-    Block    = require('../../../Editor/Block');
+    Block    = require('../../../Components/Block');
 
 require('./Conditional.less');
 
@@ -3385,9 +3829,9 @@ module.exports = Control.extend('Conditional', {
     }
 });
 
-},{"../../../Editor/Block":27,"../../Argument":39,"../Control":43,"./Conditional.less":42}],42:[function(require,module,exports){
-module.exports=require(32)
-},{}],43:[function(require,module,exports){
+},{"../../../Components/Block":54,"../../Argument":63,"../Control":67,"./Conditional.less":66}],66:[function(require,module,exports){
+module.exports=require(39)
+},{}],67:[function(require,module,exports){
 require('./Control.less');
 
 module.exports = require('../Token').extend('Control', {
@@ -3399,7 +3843,7 @@ module.exports = require('../Token').extend('Control', {
 
     /*** Functions ***/
     validatePosition: function(cursor) {
-        if(subview(cursor.$wrapper.parent()).type == 'Line') {
+        if(subview(cursor.$wrapper.parent()).type == 'Code-Line') {
             return true;
         }
         else {
@@ -3409,15 +3853,15 @@ module.exports = require('../Token').extend('Control', {
     }
 });
 
-},{"../Token":89,"./Control.less":44}],44:[function(require,module,exports){
+},{"../Token":113,"./Control.less":68}],68:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Control{background:orange;padding:2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],45:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 module.exports = [
     require("./Conditional/Conditional")
 ];
-},{"./Conditional/Conditional":41}],46:[function(require,module,exports){
+},{"./Conditional/Conditional":65}],70:[function(require,module,exports){
 var Argument = require('../Argument'),
-    cursor   = require('../../Editor/cursor');
+    cursor   = require('../../cursor');
 
 require('./Function.less');
 
@@ -3461,9 +3905,9 @@ module.exports = require('../Token').extend('Function', {
     }
 });
 
-},{"../../Editor/cursor":35,"../Argument":39,"../Token":89,"./Function.less":47}],47:[function(require,module,exports){
+},{"../../cursor":116,"../Argument":63,"../Token":113,"./Function.less":71}],71:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Function{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;background:#1075F6;margin:2px;padding:3px 5px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],48:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 var Func = require('../Function');
 
 require('./Parentheses.less');
@@ -3481,17 +3925,20 @@ module.exports = Func.extend('Parentheses', {
         }
     ]
 });
-},{"../Function":46,"./Parentheses.less":49}],49:[function(require,module,exports){
-module.exports=require(32)
-},{}],50:[function(require,module,exports){
-var terminal = require('../../../terminal'),
-    Func    = require('../Function');
+},{"../Function":70,"./Parentheses.less":73}],73:[function(require,module,exports){
+module.exports=require(39)
+},{}],74:[function(require,module,exports){
+var Func = require('../Function');
 
 require('./Print.less');
 
 module.exports = Func.extend('print', {
     run: function() {
-        terminal.print(this.argument(0));
+        var terminal = this.editor().terminal;
+        
+        if(terminal) {
+            terminal.print(this.argument(0));
+        }
     },
     arguments: [
         {
@@ -3505,17 +3952,17 @@ module.exports = Func.extend('print', {
     }
 });
 
-},{"../../../terminal":102,"../Function":46,"./Print.less":51}],51:[function(require,module,exports){
+},{"../Function":70,"./Print.less":75}],75:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Parentheses{color:#747474;background:#FFF9B6}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],52:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 module.exports = [
     require('./Print/Print'),
     require('./Parentheses/Parentheses')
 ];
 
-},{"./Parentheses/Parentheses":48,"./Print/Print":50}],53:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-False,.view-True{color:#fff;background:#D32CD3}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],54:[function(require,module,exports){
+},{"./Parentheses/Parentheses":72,"./Print/Print":74}],77:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-false,.view-true{color:#fff;background:#D32CD3}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],78:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -3530,7 +3977,7 @@ module.exports = Literal.extend('false', {
     }
 });
 
-},{"../Literal":56,"./Boolean.less":53}],55:[function(require,module,exports){
+},{"../Literal":80,"./Boolean.less":77}],79:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -3545,7 +3992,7 @@ module.exports = Literal.extend('true', {
     }
 });
 
-},{"../Literal":56,"./Boolean.less":53}],56:[function(require,module,exports){
+},{"../Literal":80,"./Boolean.less":77}],80:[function(require,module,exports){
 require('./Literal.less');
 
 module.exports = require('../Token').extend('Literal', {
@@ -3553,9 +4000,9 @@ module.exports = require('../Token').extend('Literal', {
     val: function() {}
 });
 
-},{"../Token":89,"./Literal.less":57}],57:[function(require,module,exports){
+},{"../Token":113,"./Literal.less":81}],81:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Literal{-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px;padding:0 4px;margin:0 1px;display:inline-block}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],58:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Number.less');
 
@@ -3579,9 +4026,9 @@ module.exports = Literal.extend('Number', {
     }
 });
 
-},{"../Literal":56,"./Number.less":59}],59:[function(require,module,exports){
-module.exports=require(32)
-},{}],60:[function(require,module,exports){
+},{"../Literal":80,"./Number.less":83}],83:[function(require,module,exports){
+module.exports=require(39)
+},{}],84:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./String.less');
 
@@ -3605,9 +4052,9 @@ module.exports = Literal.extend('String', {
     }
 });
 
-},{"../Literal":56,"./String.less":61}],61:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-String{color:#000;background:#FFFFA1;padding:0;display:inline}.string-input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],62:[function(require,module,exports){
+},{"../Literal":80,"./String.less":85}],85:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-String{color:#000;background:#FFFFA1;padding:0;display:inline}.string-input{-moz-user-select:text;-ms-user-select:text;-khtml-user-select:text;-webkit-user-select:text;-o-user-select:text;user-select:text}.string-input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],86:[function(require,module,exports){
 module.exports = [
     require('./String/String'),
     require('./Number/Number'),
@@ -3615,7 +4062,7 @@ module.exports = [
     require('./Booleans/False')
 ];
 
-},{"./Booleans/False":54,"./Booleans/True":55,"./Number/Number":58,"./String/String":60}],63:[function(require,module,exports){
+},{"./Booleans/False":78,"./Booleans/True":79,"./Number/Number":82,"./String/String":84}],87:[function(require,module,exports){
 module.exports = require('./Boolean').extend('AND', {
     template: "AND",
     run: function(first, second) {
@@ -3623,16 +4070,16 @@ module.exports = require('./Boolean').extend('AND', {
     }
 });
 
-},{"./Boolean":64}],64:[function(require,module,exports){
+},{"./Boolean":88}],88:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Boolean.less');
 
 module.exports = Operator.extend('Boolean', {
     precedence: 0
 });
-},{"../Operator":86,"./Boolean.less":65}],65:[function(require,module,exports){
+},{"../Operator":110,"./Boolean.less":89}],89:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Boolean{background:#F53939;font-style:italic}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],66:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 module.exports = require('./Boolean').extend('NOT', {
     isSingleOperator:   true,
     template:           "NOT",
@@ -3649,7 +4096,7 @@ module.exports = require('./Boolean').extend('NOT', {
     }
 });
 
-},{"./Boolean":64}],67:[function(require,module,exports){
+},{"./Boolean":88}],91:[function(require,module,exports){
 module.exports = require('./Boolean').extend('OR', {
     template: "OR",
     run: function(first, second) {
@@ -3657,7 +4104,7 @@ module.exports = require('./Boolean').extend('OR', {
     }
 });
 
-},{"./Boolean":64}],68:[function(require,module,exports){
+},{"./Boolean":88}],92:[function(require,module,exports){
 module.exports = require('./Boolean').extend('XOR', {
     template: "XOR",
     run: function(first, second) {
@@ -3665,7 +4112,7 @@ module.exports = require('./Boolean').extend('XOR', {
     }
 });
 
-},{"./Boolean":64}],69:[function(require,module,exports){
+},{"./Boolean":88}],93:[function(require,module,exports){
 module.exports = [
     require('./AND'),
     require('./OR'),
@@ -3673,16 +4120,16 @@ module.exports = [
     require('./NOT')
 ];
 
-},{"./AND":63,"./NOT":66,"./OR":67,"./XOR":68}],70:[function(require,module,exports){
+},{"./AND":87,"./NOT":90,"./OR":91,"./XOR":92}],94:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Comparator.less');
 
 module.exports = Operator.extend('Comparator', {
     precedence: 1
 });
-},{"../Operator":86,"./Comparator.less":71}],71:[function(require,module,exports){
+},{"../Operator":110,"./Comparator.less":95}],95:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Comparator{background:#35C062}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],72:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 module.exports = require('./Comparator').extend('Equals', {
     template: "=",
     run: function(first, second) {
@@ -3690,7 +4137,7 @@ module.exports = require('./Comparator').extend('Equals', {
     }
 });
 
-},{"./Comparator":70}],73:[function(require,module,exports){
+},{"./Comparator":94}],97:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThan', {
     template: ">",
     run: function(first, second) {
@@ -3698,7 +4145,7 @@ module.exports = require('./Comparator').extend('GreaterThan', {
     }
 });
 
-},{"./Comparator":70}],74:[function(require,module,exports){
+},{"./Comparator":94}],98:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThanEquals', {
     template: "&ge;",
     run: function(first, second) {
@@ -3706,14 +4153,14 @@ module.exports = require('./Comparator').extend('GreaterThanEquals', {
     }
 });
 
-},{"./Comparator":70}],75:[function(require,module,exports){
+},{"./Comparator":94}],99:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThan', {
     template: "<",
     run: function(first, second) {
         return first < second;
     }
 });
-},{"./Comparator":70}],76:[function(require,module,exports){
+},{"./Comparator":94}],100:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThanEquals', {
     template: "&le;",
     run: function(first, second) {
@@ -3721,7 +4168,7 @@ module.exports = require('./Comparator').extend('LessThanEquals', {
     }
 });
 
-},{"./Comparator":70}],77:[function(require,module,exports){
+},{"./Comparator":94}],101:[function(require,module,exports){
 module.exports = [
     require('./GreaterThan'),
     require('./GreaterThanEquals'),
@@ -3729,7 +4176,7 @@ module.exports = [
     require('./LessThanEquals'),
     require('./LessThan')
 ];
-},{"./Equals":72,"./GreaterThan":73,"./GreaterThanEquals":74,"./LessThan":75,"./LessThanEquals":76}],78:[function(require,module,exports){
+},{"./Equals":96,"./GreaterThan":97,"./GreaterThanEquals":98,"./LessThan":99,"./LessThanEquals":100}],102:[function(require,module,exports){
 module.exports = require('./Math').extend('Divide', {
     template: "&frasl;",
     precedence: 3,
@@ -3738,22 +4185,22 @@ module.exports = require('./Math').extend('Divide', {
     }
 });
 
-},{"./Math":80}],79:[function(require,module,exports){
+},{"./Math":104}],103:[function(require,module,exports){
 module.exports = require('./Math').extend('Exp', {
     template: "^",
     precedence: 4,
     run: Math.pow
 });
-},{"./Math":80}],80:[function(require,module,exports){
+},{"./Math":104}],104:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Math.less');
 
 module.exports = Operator.extend('Math', {
     
 });
-},{"../Operator":86,"./Math.less":81}],81:[function(require,module,exports){
+},{"../Operator":110,"./Math.less":105}],105:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Math{background:#F53939}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],82:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 module.exports = require('./Math').extend('Minus', {
     template: "-",
     precedence: function(stack, i) {
@@ -3791,7 +4238,7 @@ module.exports = require('./Math').extend('Minus', {
     }
 });
 
-},{"./Math":80}],83:[function(require,module,exports){
+},{"./Math":104}],107:[function(require,module,exports){
 module.exports = require('./Math').extend('Multiply', {
     template: "&times;",
     precedence: 3,
@@ -3800,7 +4247,7 @@ module.exports = require('./Math').extend('Multiply', {
     }
 });
 
-},{"./Math":80}],84:[function(require,module,exports){
+},{"./Math":104}],108:[function(require,module,exports){
 module.exports = require('./Math').extend('Plus', {
     template: "+",
     precedence: 2,
@@ -3809,7 +4256,7 @@ module.exports = require('./Math').extend('Plus', {
     }
 });
 
-},{"./Math":80}],85:[function(require,module,exports){
+},{"./Math":104}],109:[function(require,module,exports){
 module.exports = [
     require('./Exp'),
     require('./Divide'),
@@ -3818,7 +4265,7 @@ module.exports = [
     require('./Plus')
 ];
 
-},{"./Divide":78,"./Exp":79,"./Minus":82,"./Multiply":83,"./Plus":84}],86:[function(require,module,exports){
+},{"./Divide":102,"./Exp":103,"./Minus":106,"./Multiply":107,"./Plus":108}],110:[function(require,module,exports){
 require('./Operator.less');
 
 module.exports = require('../Token').extend('Operator', {
@@ -3826,197 +4273,348 @@ module.exports = require('../Token').extend('Operator', {
     tagName: 'span'
 });
 
-},{"../Token":89,"./Operator.less":87}],87:[function(require,module,exports){
+},{"../Token":113,"./Operator.less":111}],111:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Operator{-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 4px;margin:0 1px;display:inline-block}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],88:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 module.exports = require('./Comparators/index').concat(
     require('./Math/index'),
     require('./Boolean/index')
 );
-},{"./Boolean/index":69,"./Comparators/index":77,"./Math/index":85}],89:[function(require,module,exports){
+},{"./Boolean/index":93,"./Comparators/index":101,"./Math/index":109}],113:[function(require,module,exports){
 var subview = require('subview'),
-    cursor  = require('../Editor/cursor');
+    cursor  = require('../cursor');
 
 require('./Token.less');
 
-module.exports = subview('Token', {
+module.exports = subview('Code-Token', {
     init: function() {},
     meta: {},
     focus: function() {
         this.$wrapper.after(cursor);
     },
-    error: function(msg) {
-        console.error(msg);
-    },
+    error: require('../Components/error'),
     validatePosition: function(cursor) {
         return true;
+    },
+    editor: function() {
+        return this.parent('Code');
     }
 });
 
-},{"../Editor/cursor":35,"./Token.less":90,"subview":26}],90:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Token{color:#FFF}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],91:[function(require,module,exports){
+},{"../Components/error":61,"../cursor":116,"./Token.less":114,"subview":25}],114:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Token{color:#FFF}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],115:[function(require,module,exports){
 module.exports = require('./Functions/index').concat(
     require('./Literals/index'),
     require('./Operators/index'),
     require('./Control/index')
 );
-},{"./Control/index":45,"./Functions/index":52,"./Literals/index":62,"./Operators/index":88}],92:[function(require,module,exports){
-var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  
-
-
-  return "<button class='Toolbar-run'>&#9658;</button>";
-  });
-},{"handlebars/runtime":9}],93:[function(require,module,exports){
+},{"./Control/index":69,"./Functions/index":76,"./Literals/index":86,"./Operators/index":112}],116:[function(require,module,exports){
 var subview = require('subview'),
-    click   = require('onclick'),
-    editor  = require('../editor'),
-    terminal = require('../terminal');
+    error   = require('./Components/error');
+
+require('./cursor.less');
+
+var Cursor = subview('Code-Cursor', {
+    init: function() {
+        var self = this;
+
+        $(document).on('focus', 'input, div', function() {
+            self.$wrapper.hide();
+        });
+    },
+    paste: function(type) {
+        //Make sure the cursor is shown
+        this.$wrapper.show();
+        $(':focus').blur();
+
+        //Get the type
+        var Type = subview.lookup(type);
+
+        if(!Type) {
+            console.error("Type '"+type+"' does not exist");
+        }
+
+        //Validate Position
+        if(Type.View.prototype.validatePosition(this)) {
+
+            //Paste the function
+            var command = Type.spawn();
+            
+            this.$wrapper.before(command.$wrapper);
+            command.focus();
+        }
+
+        //Event
+        this.trigger('paste');
+        
+        return this;
+    },
+    error: error
+});
+
+module.exports = Cursor.spawn();
+
+},{"./Components/error":61,"./cursor.less":117,"subview":25}],117:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@-webkit-keyframes flash{0%,100%{opacity:1}50%{opacity:0}}.view-Code-Cursor{position:relative;display:inline-block;width:2px;height:1.1em;margin:-.05em -1px;top:.05em;background:#1279FC;-webkit-animation:flash 1s infinite}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],118:[function(require,module,exports){
+var subview = require('subview'),
+    prefix  = require('prefix'),
+    $       = require('unopinionate').selector;
+
+require('./Slider.less');
+
+module.exports = subview('Slider', {
+
+    /*** Configuration ***/
+    panels:         [],
+    defaultPanel:   0,
+    speed:          300,
+
+    /*** Core Functionality ***/
+    config: function() {
+        this.$slider = $("<div class='Slider-Slider'>")
+            .appendTo(this.$wrapper);
+    },
+    render: function() {
+        this.panelWidth = 100/this.panels.length;
+        
+        //Build the panels
+        for(var i=0; i<this.panels.length; i++) {
+            var panel = this.panels[i],
+                subview = panel.content.isViewPool ? panel.content.spawn() : panel.content;
+
+            //Configure the Panel
+            panel.content   = subview;
+            panel.$wrapper  = subview.$wrapper;
+
+            //Add Class
+            panel.$wrapper
+                .addClass('Slider-Panel')
+                .css('width', this.panelWidth + '%');
+
+            //Append
+            this.$slider.append(panel.$wrapper);
+        }
+
+        //Set Slider Width
+        this.$slider.css('width', (this.panels.length*100) + '%');
+    },
+    init: function() {
+        var self = this;
+
+        //Show the default panel
+        this.show(this.defaultPanel);
+
+        //Configure Transitions
+        this._setupTransitions();
+    },
+    clean: function() {
+        this.panels         = {};
+        this.defaultPanel   = 0;
+        this.$wrapper.html('');
+        this._removeTransitions();
+    },
+
+    /*** Methods ***/
+    show: function(i, callback) {
+        if(typeof i == 'string') {
+            i = this._getPanelNum(i);
+        }
+
+        this.$slider.css(
+            prefix.dash('transform'), 
+            'translate(-' + (i*this.panelWidth) + '%)'
+        );
+
+        if(callback) {
+            setTimeout(callback, this.speed);
+        }
+    },
+
+    /*** Internal Methods ***/
+    _getPanelNum: function(name) {
+        var i = this.panels.length;
+        while(i--) {
+            if(this.panels[i].name == name) {
+                return i;
+            }
+        }
+
+        console.error('Panel "'+name+'" is not defined.');
+        return 0;
+    },
+    _setupTransitions: function() {
+        this.$slider.css(prefix.dash('transition'), prefix.dash('transform') + ' ' + (this.speed/1000) + 's');
+    },
+    _removeTransitions: function() {
+        this.$slider.css(prefix.dash('transition'), 'none');
+    }
+
+});
+
+},{"./Slider.less":119,"prefix":19,"subview":25,"unopinionate":26}],119:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Slider{position:relative;width:100%;height:100%;overflow:hidden}.Slider-Slider{position:absolute;left:0;top:0;height:100%;white-space:nowrap}.Slider-Panel{display:inline-block;position:relative;height:100%;vertical-align:top;white-space:normal}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],120:[function(require,module,exports){
+var subview     = require('subview'),
+    click    = require('onclick');
 
 require('./Toolbar.less');
 
-module.exports = subview("Toolbar", {
+module.exports = subview("Toolbar");
+
+},{"./Toolbar.less":121,"onclick":10,"subview":25}],121:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Toolbar{position:absolute;height:50px;width:100%;background:#F1F0F0;border-bottom:solid 1px #CCC;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding-top:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],122:[function(require,module,exports){
+var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var stack1, helper, functionType="function", escapeExpression=this.escapeExpression;
+
+
+  if (helper = helpers.msg) { stack1 = helper.call(depth0, {hash:{},data:data}); }
+  else { helper = (depth0 && depth0.msg); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
+  return escapeExpression(stack1);
+  });
+},{"handlebars/runtime":8}],123:[function(require,module,exports){
+var subview = require('subview'),
+    $       = require('unopinionate').selector;
+
+var $body = $('body');
+
+require('./Tooltip.less');
+
+module.exports = subview('Tooltip', {
+    config: function(config) {
+        this.msg = config.msg;
+        this.$el = config.$el;
+        this.$constrain = config.$constrain || $body; //Constraint should always have relative or absolute positioning
+    },
     init: function() {
-        click({
-            '.Toolbar-run': function() {
-                terminal.clear();
-                editor.run();
+
+        /*** Append to Document ***/
+        // Do this here so that the default dimensions show up
+        this.$constrain.append(this.$wrapper);
+        this.$wrapper.append(this.$arrow);
+
+        /*** Get position data ***/
+        var el      = this.$el.position(),
+            con     = this.$constrain.position();
+
+        el.width    = this.$el.outerWidth();
+        el.height   = this.$el.outerHeight();
+
+        con.width   = this.$constrain.outerWidth();
+        con.height  = this.$constrain.outerHeight();
+
+        var wrapH   = this.$wrapper.outerHeight(),
+            wrapW   = this.$wrapper.outerWidth();
+
+        //Get derived position data
+        el.mid = el.left + el.width/2;
+
+        /*** Determine vertical position ***/
+        var topSpace    = el.top - con.top,
+            bottomSpace = (con.top + con.height) - (el.top + el.height);
+
+        console.log(el);
+        console.log(con);
+
+        console.log(topSpace);
+        console.log(bottomSpace);
+
+        //Put it above the element
+        if(topSpace > bottomSpace) {
+            console.log('above');
+            if(wrapH > topSpace) {
+                wrapH = topSpace;
+            }
+
+            this.$wrapper.css('top', el.top - wrapH);
+        }
+
+        //Put it below the element
+        else {
+            console.log('below');
+            console.log(wrapH);
+            if(wrapH > bottomSpace) {
+                wrapH = topSpace;
+            }
+
+            this.$wrapper.css('top', el.top + el.height);
+        }
+
+        this.$wrapper.css('height', wrapH);
+
+        /*** Determine Horizontal Position ***/
+        var centerLeft = el.mid - wrapW/2;
+        
+        if(centerLeft < con.left) {
+            this.$wrapper.css('left', 0);
+        }
+        else if(centerLeft + wrapW > con.left + con.width) {
+            this.$wrapper.css('right', centerLeft);
+        }
+        else {
+            this.$wrapper.css('left', centerLeft);
+        }
+        
+        
+    },
+    clean: function() {
+        this.$wrapper
+            .css('height', 'auto')
+            .css('left', 'auto')
+            .css('right', 'auto');
+    },
+    template: require('./Tooltip.handlebars'),
+    data: function() {
+        return {
+            msg: this.msg
+        };
+    },
+    $arrow: $("<div class='Tooltip-arrow'>")
+});
+},{"./Tooltip.handlebars":122,"./Tooltip.less":124,"subview":25,"unopinionate":26}],124:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Tooltip{position:absolute;max-width:100%;max-height:100%;overflow:auto}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],125:[function(require,module,exports){
+var Slider = require('./UI/Slider/Slider');
+
+require('./main.less');
+
+module.exports = Slider.extend('main', {
+    init: function() {
+        var self = this;
+
+        this.listenDown({
+            open: function() {
+                self.show('files');
+            },
+            edit: function() {
+                self.show('editor');
+            },
+            run: function(callback) {
+                self.show('run', callback);
             }
         });
     },
-    template: require('./Toolbar.handlebars')
-});
-
-},{"../editor":98,"../terminal":102,"./Toolbar.handlebars":92,"./Toolbar.less":94,"onclick":11,"subview":26}],94:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Toolbar{background:#F1F0F0;border-bottom:solid 1px #CCC;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.Toolbar-run{float:right}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],95:[function(require,module,exports){
-var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var stack1, functionType="function", escapeExpression=this.escapeExpression, self=this;
-
-function program1(depth0,data) {
-  
-  var buffer = "", stack1, helper;
-  buffer += "\n    <div class='Tray-Button' data-type='";
-  if (helper = helpers.type) { stack1 = helper.call(depth0, {hash:{},data:data}); }
-  else { helper = (depth0 && depth0.type); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
-  buffer += escapeExpression(stack1)
-    + "'>";
-  if (helper = helpers.name) { stack1 = helper.call(depth0, {hash:{},data:data}); }
-  else { helper = (depth0 && depth0.name); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "</div>\n";
-  return buffer;
-  }
-
-  stack1 = helpers.each.call(depth0, (depth0 && depth0.buttons), {hash:{},inverse:self.noop,fn:self.program(1, program1, data),data:data});
-  if(stack1 || stack1 === 0) { return stack1; }
-  else { return ''; }
-  });
-},{"handlebars/runtime":9}],96:[function(require,module,exports){
-var subview = require('subview'),
-    buttons = require('../Tokens/index.js'),
-    drag    = require('ondrag'),
-    click   = require('onclick'),
-    cursor  = require('../Editor/cursor');
-
-require('./Tray.less');
-
-/*** Setup Dragging ***/
-
-drag('.Tray-Button', {
-    helper: "clone",
-    start: function() {
-        
-    },
-    move: function() {
-        
-    },
-    stop: function() {
-        var type = this.getAttribute('data-type');
-    }
-});
-
-click('.Tray-Button', function(e) {
-    e.preventDefault();
-    
-    var type = this.getAttribute('data-type');
-    cursor.paste(type);
-});
-
-/*** Define the Subview ***/
-
-module.exports = subview('Tray', {
-    init: function() {
-        
-    },
-    template: require("./Tray.handlebars"),
-    data: function() {
-        var data = [];
-
-        var i = buttons.length;
-        while(i--) {
-            var Button = buttons[i];
-
-            data.push({
-                name: Button.View.prototype.meta.display || Button.View.prototype.template,
-                type: Button.type
-            });
+    panels: [
+        {
+            name:       'files',
+            content:    require('./Files/Files')
+        },
+        {
+            name:       'editor',
+            content:    require('./Editor/Editor')
+        },
+        {
+            name:       'run',
+            content:    require('./Run/Run')
         }
-
-        return {
-            buttons: data
-        };
-    }
-});
-},{"../Editor/cursor":35,"../Tokens/index.js":91,"./Tray.handlebars":95,"./Tray.less":97,"onclick":11,"ondrag":15,"subview":26}],97:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Tray{background:#F1F0F0;padding:5px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.Tray-Button{display:inline-block;padding:2px 5px;margin:2px 0;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;background:#1075F6;color:#fff;cursor:pointer}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],98:[function(require,module,exports){
-module.exports = require('./Editor/Editor').spawn();
-
-},{"./Editor/Editor":29}],99:[function(require,module,exports){
-var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var buffer = "", stack1, functionType="function";
-
-
-  buffer += "<div class='panel panel-edit'>\n    ";
-  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.Toolbar)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n    ";
-  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.editor)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n    ";
-  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.Tray)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n</div>\n\n<div class='panel panel-run'>\n    ";
-  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.terminal)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n</div>";
-  return buffer;
-  });
-},{"handlebars/runtime":9}],100:[function(require,module,exports){
-var subview = require('subview');
-require('./main.less');
-
-module.exports = subview('main', {
-    template: require('./main.handlebars'),
-    subviews: {
-        Toolbar:    require('./Toolbar/Toolbar'),
-        editor:     require('./editor'),
-        Tray:       require('./Tray/Tray'),
-        terminal:    require('./terminal')
-    }
+    ],
+    defaultPanel: 'editor'
 });
 
-},{"./Toolbar/Toolbar":93,"./Tray/Tray":96,"./editor":98,"./main.handlebars":99,"./main.less":101,"./terminal":102,"subview":26}],101:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".panel{display:inline-block;position:relative;width:300px;height:400px;vertical-align:top;border:1px solid #DBDBDB}.view-Toolbar{position:absolute;height:30px;width:100%}.view-Editor{position:absolute;bottom:150px;top:30px;width:100%}.view-Tray{position:absolute;height:150px;bottom:0;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],102:[function(require,module,exports){
-module.exports = require('./Terminal/Terminal').spawn();
-
-},{"./Terminal/Terminal":37}]},{},[1])
+},{"./Editor/Editor":28,"./Files/Files":38,"./Run/Run":44,"./UI/Slider/Slider":118,"./main.less":126}],126:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "body,html{height:100%;width:100%}body{-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none;margin:0;position:absolute;font-family:Avenir,\"Helvetica Neue\",Helvetica,sans-serif}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}]},{},[1])

@@ -1,8 +1,11 @@
-var Block = require('./Block');
+var subview = require('subview');
 require('./Editor.less');
 
-module.exports = Block.extend('Editor', {
-    init: function() {
-        this.focus();
+module.exports = subview('Editor', {
+    template: require('./Editor.handlebars'),
+    subviews: {
+        Toolbar:    require('./Toolbar/Toolbar'),
+        code:       require('./code'),
+        Tray:       require('./Tray/Tray')
     }
 });

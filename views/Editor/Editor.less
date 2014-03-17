@@ -1,3 +1,22 @@
-.view-Editor {
-    overflow: hidden;
+@trayHeight: 150px;
+@toolbarHeight: 50px;
+
+.view-Toolbar {
+    position: absolute;
+    height: @toolbarHeight;
+    width: 100%;
+}
+
+.view-Code {
+    position: absolute;
+    bottom: @trayHeight;
+    top: @toolbarHeight;
+    width: 100%;
+}
+
+.view-Tray {
+    position: absolute;
+    height: @trayHeight;
+    bottom: 0;
+    width: 100%;
 }

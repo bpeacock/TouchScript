@@ -9,11 +9,11 @@
     <name>TouchCode</name>
 
     <description>
-        Hello World sample application that responds to the deviceready event.
+        Mobile only coding!
     </description>
 
-    <author href="http://phonegap.com" email="support@phonegap.com">
-        PhoneGap Team
+    <author href="http://brianpeacock.me" email="bpeacock@fastfig.com">
+        Brian Peacock
     </author>
 
     <!--
@@ -95,4 +95,5 @@
         <access origin="http://phonegap.com" browserOnly="true" /> - only allows http://phonegap.com to be opened by the child browser.
     -->
 
+    <preference name="DisallowOverscroll" value="true" />
 </widget>
