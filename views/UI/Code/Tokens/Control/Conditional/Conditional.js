@@ -4,7 +4,7 @@ var Control  = require('../Control'),
 
 require('./Conditional.less');
 
-module.exports = Control.extend('Conditional', {
+module.exports = Control.extend('Code-Conditional', {
     init: function() {
         //Define state variables
         this.conditions = [];

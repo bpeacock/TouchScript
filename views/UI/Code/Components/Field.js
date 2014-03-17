@@ -77,10 +77,10 @@ module.exports = subview('Code-Field', {
                             token.error('No right-side for ' + token.template);
                             return;
                         }
-                        else if(prev.isOperator) {
+                        else if(prev && prev.isOperator) {
                             token.error('Invalid right-side for ' + token.template);
                         }
-                        else if(next.isOperator) {
+                        else if(next && next.isOperator) {
                             token.error('Invalid left-side for ' + token.template);
                         }
                         else {

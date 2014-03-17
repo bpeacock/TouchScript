@@ -1,6 +1,6 @@
 require('./Control.less');
 
-module.exports = require('../Token').extend('Control', {
+module.exports = require('../Token').extend('Code-Control', {
     isControl: true,
     
     /*** Should Be Overwritten ***/

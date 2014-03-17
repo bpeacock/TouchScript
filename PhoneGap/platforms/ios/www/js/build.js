@@ -22,7 +22,7 @@ window.app = {
     }
 };
 
-},{"../../../views/main.js":125,"subview":25}],2:[function(require,module,exports){
+},{"../../../views/main.js":131,"subview":25}],2:[function(require,module,exports){
 "use strict";
 /*globals Handlebars: true */
 var base = require("./handlebars/base");
@@ -2834,23 +2834,22 @@ View.prototype = {
             var selector = '.listener-'+name+'-'+dir;
             
             //Select $wrappers with the right listener class in the right direction
-            var $els = self.$wrapper[jqFunc](selector + ', ' + selector+'-'+self.type),
-                i    = $els.length;
+            var $els = self.$wrapper[jqFunc](selector + ', ' + selector+'-'+self.type);
 
-            while(i--) {
+            for(var i=0; i<$els.length; i++) {
                 //Get the actual subview
                 var recipient = subview($els[i]);
 
                 //Check for a subview type specific callback
                 var typedCallback = recipient.listeners[self.type + ":" + name + ":" + dir];
-                if(typedCallback) {
-                    return typedCallback.apply(self, [args]) === false; //Breaks if callback returns false
+                if(typedCallback && typedCallback.apply(self, [args]) === false) {
+                    return true; //Breaks if callback returns false
                 }
 
                 //Check for a general event callback
                 var untypedCallback = recipient.listeners[name + ":" + dir];
-                if(untypedCallback) {
-                    return untypedCallback.apply(self, [args]) === false; //Breaks if callback returns false
+                if(untypedCallback && untypedCallback.apply(self, [args]) === false) {
+                    return true; //Breaks if callback returns false
                 }
             }
         });
@@ -3258,7 +3257,7 @@ module.exports = Toolbar.extend('Editor-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../Run/terminal":51,"../../UI/Toolbar/Toolbar":120,"../code":36,"./Toolbar.handlebars":30,"./Toolbar.less":32,"onclick":10}],32:[function(require,module,exports){
+},{"../../Run/terminal":51,"../../UI/Toolbar/Toolbar":126,"../code":36,"./Toolbar.handlebars":30,"./Toolbar.less":32,"onclick":10}],32:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Editor-Toolbar-run{float:right}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],33:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
@@ -3341,7 +3340,7 @@ module.exports = subview('Tray', {
         };
     }
 });
-},{"../../UI/Code/Tokens/index":115,"../../UI/Code/cursor":116,"./Tray.handlebars":33,"./Tray.less":35,"onclick":10,"ondrag":14,"subview":25}],35:[function(require,module,exports){
+},{"../../UI/Code/Tokens/index":121,"../../UI/Code/cursor":122,"./Tray.handlebars":33,"./Tray.less":35,"onclick":10,"ondrag":14,"subview":25}],35:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Tray{background:#F1F0F0;padding:5px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.Tray-Button{display:inline-block;padding:2px 5px;margin:2px 0;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;background:#1075F6;color:#fff;cursor:pointer}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],36:[function(require,module,exports){
 var code = require('../UI/Code/Code').spawn();
@@ -3411,7 +3410,7 @@ module.exports = Toolbar.extend('Files-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../UI/Toolbar/Toolbar":120,"./Toolbar.handlebars":40,"./Toolbar.less":42,"onclick":10}],42:[function(require,module,exports){
+},{"../../UI/Toolbar/Toolbar":126,"./Toolbar.handlebars":40,"./Toolbar.less":42,"onclick":10}],42:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Files-Toolbar-delete{float:right}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],43:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
@@ -3485,7 +3484,8 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   });
 },{"handlebars/runtime":8}],49:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
-    click    = require('onclick');
+    click    = require('onclick'),
+    code     = require('../../Editor/code');
 
 require('./Toolbar.less');
 
@@ -3495,6 +3495,7 @@ module.exports = Toolbar.extend('Run-Toolbar', {
 
         click({
             '.Run-Toolbar-exit': function() {
+                code.kill();
                 self.trigger('edit');
             }
         });
@@ -3502,7 +3503,7 @@ module.exports = Toolbar.extend('Run-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../UI/Toolbar/Toolbar":120,"./Toolbar.handlebars":48,"./Toolbar.less":50,"onclick":10}],50:[function(require,module,exports){
+},{"../../Editor/code":36,"../../UI/Toolbar/Toolbar":126,"./Toolbar.handlebars":48,"./Toolbar.less":50,"onclick":10}],50:[function(require,module,exports){
 module.exports=require(39)
 },{}],51:[function(require,module,exports){
 module.exports = require('./Terminal/Terminal').spawn();
@@ -3523,7 +3524,11 @@ module.exports = Block.extend('Code', {
         return this;
     },
     beforeRun: function() {
+        this.running = true;
         this.environment.clear();
+    },
+    kill: function() {
+        this.running = false;
     },
 
     /*** Events ***/
@@ -3531,7 +3536,7 @@ module.exports = Block.extend('Code', {
 });
 
 },{"./Code.less":53,"./Components/Block":54}],53:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{overflow:hidden}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{overflow:auto;font-family:Consolas,monaco,monospace;line-height:1.6em}.view-Code-Line{min-height:1.6em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],54:[function(require,module,exports){
 var subview     = require('subview'),
     cursor      = require('../cursor'),
@@ -3553,6 +3558,8 @@ module.exports = subview('Code-Block', {
             if(!last.isEmpty()) {
                 self.addLine();
             }
+
+            return false;
         });
     },
     empty: function() {
@@ -3584,25 +3591,29 @@ module.exports = subview('Code-Block', {
     }
 });
 
-},{"../cursor":116,"./Block.less":55,"./EnvironmentModel":56,"./Line":59,"subview":25}],55:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Block{background:#fff;-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{"../cursor":122,"./Block.less":55,"./EnvironmentModel":56,"./Line":59,"subview":25}],55:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Block{background:rgba(255,255,255,.36);-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px;color:#111}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],56:[function(require,module,exports){
 var Environment = function() {
-
+    this.clear();
 };
 
 Environment.prototype = {
     clear: function() {
-        
+        this.vars = {};
+    },
+    set: function(name, value) {
+        this.vars[name] = value;
+    },
+    get: function(name) {
+        return this.vars[name];
     }
 };
 
 module.exports = Environment;
 },{}],57:[function(require,module,exports){
 var subview = require('subview'),
-    cursor  = require('../cursor'),
-    click   = require('onclick'),
-    error   = require('./error');
+    cursor  = require('../cursor');
 
 require('./Field.less');
 
@@ -3612,33 +3623,37 @@ $(document).on('mousedown touchstart', '.view-Code-Field', function(e) {
 });
 
 module.exports = subview('Code-Field', {
-    init: function() {
-
-    },
     dump: function() {
 
     },
     focus: function() {
-        this.$wrapper.append(cursor.$wrapper);
+        cursor.appendTo(this.$wrapper);
         return this;
     },
     run: function() {
         var stack = [],
             token;
 
-        //Build Stack
-        var children = this.$wrapper.children();
-        for(var i=0; i<children.length; i++) {
-            token = subview(children[i]);
+        //Get Tokens
+        var tokens = this.$wrapper.children();
 
-            if(token.isFunction || token.isControl) {
-                stack.push(token.run());
-            }
-            else if(token.isOperator) {
+        //Ignore Empty Lines
+        if(tokens.length === 0) {
+            return;
+        }
+
+        //Build Stack
+        for(var i=0; i<tokens.length; i++) {
+            token = subview(tokens[i]);
+
+            if(token.isOperator) {
                 stack.push(token);
             }
             else if(token.isLiteral) {
                 stack.push(token.val());
+            }
+            else if(token.isToken) {
+                stack.push(token.run());
             }
             else if(token.type != 'Code-Cursor') {
                 console.error("Token not recognized");
@@ -3657,7 +3672,7 @@ module.exports = subview('Code-Field', {
                     stack.splice(i, 1);
                     i--;
                 }
-                else if(token.isOperator && (typeof token.precedence == 'function' ? token.precedence(stack, i) : token.precedence) == maxPrecedence) {
+                else if(token && token.isOperator && (typeof token.precedence == 'function' ? token.precedence(stack, i) : token.precedence) == maxPrecedence) {
                     //Operators like NOT that only operate on the token after
                     if(token.isSingleOperator) {
                         stack.splice(i, 2, token.run(stack[i + 1]));
@@ -3676,10 +3691,10 @@ module.exports = subview('Code-Field', {
                             token.error('No right-side for ' + token.template);
                             return;
                         }
-                        else if(prev.isOperator) {
+                        else if(prev && prev.isOperator) {
                             token.error('Invalid right-side for ' + token.template);
                         }
-                        else if(next.isOperator) {
+                        else if(next && next.isOperator) {
                             token.error('Invalid left-side for ' + token.template);
                         }
                         else {
@@ -3699,10 +3714,10 @@ module.exports = subview('Code-Field', {
             return stack[0];
         }
     },
-    error: error
+    error: require('./error')
 });
 
-},{"../cursor":116,"./Field.less":58,"./error":61,"onclick":10,"subview":25}],58:[function(require,module,exports){
+},{"../cursor":122,"./Field.less":58,"./error":61,"subview":25}],58:[function(require,module,exports){
 module.exports=require(39)
 },{}],59:[function(require,module,exports){
 var Field = require('./Field');
@@ -3716,7 +3731,7 @@ module.exports = Field.extend('Code-Line', {
 });
 
 },{"./Field":57,"./Line.less":60}],60:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{counter-reset:lineNumber}.view-Code-Line{position:relative;min-height:1.2em;padding-left:30px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.view-Code-Line:before{font-family:Consolas,monaco,monospace;counter-increment:lineNumber;content:counter(lineNumber);position:absolute;height:100%;width:34px;left:-4px;padding-left:8px;padding-top:.1em;background:#F1F0F0;border-right:1px solid #CCC;color:#555;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{counter-reset:lineNumber}.view-Code-Line{position:relative;padding-left:30px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.view-Code-Line:before{font-family:Consolas,monaco,monospace;counter-increment:lineNumber;content:counter(lineNumber);position:absolute;height:100%;width:34px;left:-4px;padding-left:8px;padding-top:.1em;background:rgba(177,177,177,.07);border-right:1px solid rgba(128,128,128,.19);color:#555;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],61:[function(require,module,exports){
 var Tooltip = require('../../Tooltip/Tooltip'),
     subview = require('subview');
@@ -3734,7 +3749,7 @@ module.exports = function(msg) {
     });
 };
 
-},{"../../Tooltip/Tooltip":123,"./error.less":62,"subview":25}],62:[function(require,module,exports){
+},{"../../Tooltip/Tooltip":129,"./error.less":62,"subview":25}],62:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Error{background:#F70000;color:#fff;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding:2px 6px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],63:[function(require,module,exports){
 var Field = require('../Components/Field');
@@ -3742,6 +3757,8 @@ require('./Argument.less');
 
 module.exports = Field.extend('Argument', {
     init: function(config) {
+        config = config || {};
+        
         this.name = config.name || "";
         this.type = config.type || null;
     },
@@ -3750,15 +3767,45 @@ module.exports = Field.extend('Argument', {
 });
 
 },{"../Components/Field":57,"./Argument.less":64}],64:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Argument{background:#fff;min-width:15px;min-height:1.2em;margin:0 2px;padding:.1em 2px;-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Argument{background:rgba(255,255,255,.47);padding:.3em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}],65:[function(require,module,exports){
+var Token       = require('../Token'),
+    Argument    = require('../Argument');
+
+require('./Assign.less');
+
+module.exports = Token.extend('Code-Assign', {
+    init: function() {
+        this.$name = $("<input type='text' />");
+        this.value = Argument.spawn();
+
+        this.$wrapper
+            .append(this.$name)
+            .append(' = ')
+            .append(this.value.$wrapper);
+    },
+    meta: {
+        display: "Assign"
+    },
+    run: function() {
+        var value = this.value.run();
+        this.parent('Code-Block').environment.set(this.$name.val(), value);
+        return value;
+    },
+    focus: function() {
+        this.$name.focus();
+    }
+});
+},{"../Argument":63,"../Token":119,"./Assign.less":66}],66:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Assign{background:#87F08B;display:inline-block;padding:2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],67:[function(require,module,exports){
 var Control  = require('../Control'),
     Argument = require('../../Argument'),
     Block    = require('../../../Components/Block');
 
 require('./Conditional.less');
 
-module.exports = Control.extend('Conditional', {
+module.exports = Control.extend('Code-Conditional', {
     init: function() {
         //Define state variables
         this.conditions = [];
@@ -3829,12 +3876,12 @@ module.exports = Control.extend('Conditional', {
     }
 });
 
-},{"../../../Components/Block":54,"../../Argument":63,"../Control":67,"./Conditional.less":66}],66:[function(require,module,exports){
-module.exports=require(39)
-},{}],67:[function(require,module,exports){
+},{"../../../Components/Block":54,"../../Argument":63,"../Control":69,"./Conditional.less":68}],68:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Conditional{background:#BDE2FF;color:#19297C}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],69:[function(require,module,exports){
 require('./Control.less');
 
-module.exports = require('../Token').extend('Control', {
+module.exports = require('../Token').extend('Code-Control', {
     isControl: true,
     
     /*** Should Be Overwritten ***/
@@ -3853,13 +3900,59 @@ module.exports = require('../Token').extend('Control', {
     }
 });
 
-},{"../Token":113,"./Control.less":68}],68:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Control{background:orange;padding:2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],69:[function(require,module,exports){
+},{"../Token":119,"./Control.less":70}],70:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Control{background:#FFB2B2;color:#880A0A;padding:.05em 0 0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],71:[function(require,module,exports){
+var Control  = require('../Control'),
+    Argument = require('../../Argument'),
+    Block    = require('../../../Components/Block');
+
+require('./While.less');
+
+module.exports = Control.extend('Code-While', {
+    init: function() {
+        this.condition = Argument.spawn({
+            type: "Condition"
+        });
+
+        this.block = Block.spawn();
+
+        //Build the Wrapper
+        this.$wrapper
+            .append("while ")
+            .append(this.condition.$wrapper)
+            .append(':')
+            .append(this.block.$wrapper);
+    },
+    meta: {
+        display: 'while'
+    },
+    run: function() {
+        var self = this,
+            code = this.parent('Code');
+        
+        var loop = setInterval(function() {
+            if(self.condition.run() && code.running) {
+                self.block.run();
+            }
+            else {
+                clearInterval(loop);
+            }
+        }, 0);
+    },
+    focus: function() {
+        this.condition.focus();
+    }
+});
+
+},{"../../../Components/Block":54,"../../Argument":63,"../Control":69,"./While.less":72}],72:[function(require,module,exports){
+module.exports=require(39)
+},{}],73:[function(require,module,exports){
 module.exports = [
-    require("./Conditional/Conditional")
+    require("./Conditional/Conditional"),
+    require("./Loop/While")
 ];
-},{"./Conditional/Conditional":65}],70:[function(require,module,exports){
+},{"./Conditional/Conditional":67,"./Loop/While":71}],74:[function(require,module,exports){
 var Argument = require('../Argument'),
     cursor   = require('../../cursor');
 
@@ -3870,11 +3963,13 @@ module.exports = require('../Token').extend('Function', {
     init: function() {
         this.$wrapper.append(this.name+"(");
 
+        this.argumentInstances = [];
+
         //Parse Arguments
         var i = this.arguments.length;
         while(i--) {
             var arg = Argument.spawn(this.arguments[i]);
-            this.arguments[i] = arg;
+            this.argumentInstances.push(arg);
 
             this.$wrapper.append(arg.$wrapper);
             if(i > 0) {
@@ -3892,12 +3987,12 @@ module.exports = require('../Token').extend('Function', {
         
     },
     argument: function(i) {
-        return this.arguments[i].run();
+        return this.argumentInstances[i].run();
     },
     arguments: [],
     focus: function() {
-        if(this.arguments.length > 0) {
-            this.arguments[0].focus();
+        if(this.argumentInstances.length > 0) {
+            this.argumentInstances[0].focus();
         }
         else {
             this.$wrapper.after(cursor);
@@ -3905,9 +4000,9 @@ module.exports = require('../Token').extend('Function', {
     }
 });
 
-},{"../../cursor":116,"../Argument":63,"../Token":113,"./Function.less":71}],71:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Function{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;background:#1075F6;margin:2px;padding:3px 5px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],72:[function(require,module,exports){
+},{"../../cursor":122,"../Argument":63,"../Token":119,"./Function.less":75}],75:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Function{display:inline;background:#D3FFC5;color:#2C2C2C;padding:.3em;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],76:[function(require,module,exports){
 var Func = require('../Function');
 
 require('./Parentheses.less');
@@ -3925,9 +4020,9 @@ module.exports = Func.extend('Parentheses', {
         }
     ]
 });
-},{"../Function":70,"./Parentheses.less":73}],73:[function(require,module,exports){
-module.exports=require(39)
-},{}],74:[function(require,module,exports){
+},{"../Function":74,"./Parentheses.less":77}],77:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Parentheses{color:#000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],78:[function(require,module,exports){
 var Func = require('../Function');
 
 require('./Print.less');
@@ -3952,17 +4047,17 @@ module.exports = Func.extend('print', {
     }
 });
 
-},{"../Function":70,"./Print.less":75}],75:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Parentheses{color:#747474;background:#FFF9B6}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],76:[function(require,module,exports){
+},{"../Function":74,"./Print.less":79}],79:[function(require,module,exports){
+module.exports=require(39)
+},{}],80:[function(require,module,exports){
 module.exports = [
     require('./Print/Print'),
     require('./Parentheses/Parentheses')
 ];
 
-},{"./Parentheses/Parentheses":72,"./Print/Print":74}],77:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-false,.view-true{color:#fff;background:#D32CD3}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],78:[function(require,module,exports){
+},{"./Parentheses/Parentheses":76,"./Print/Print":78}],81:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-false,.view-true{color:#FFF;background:#53AEF7}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],82:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -3977,7 +4072,7 @@ module.exports = Literal.extend('false', {
     }
 });
 
-},{"../Literal":80,"./Boolean.less":77}],79:[function(require,module,exports){
+},{"../Literal":84,"./Boolean.less":81}],83:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -3992,7 +4087,7 @@ module.exports = Literal.extend('true', {
     }
 });
 
-},{"../Literal":80,"./Boolean.less":77}],80:[function(require,module,exports){
+},{"../Literal":84,"./Boolean.less":81}],84:[function(require,module,exports){
 require('./Literal.less');
 
 module.exports = require('../Token').extend('Literal', {
@@ -4000,13 +4095,13 @@ module.exports = require('../Token').extend('Literal', {
     val: function() {}
 });
 
-},{"../Token":113,"./Literal.less":81}],81:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Literal{-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px;padding:0 4px;margin:0 1px;display:inline-block}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],82:[function(require,module,exports){
+},{"../Token":119,"./Literal.less":85}],85:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Literal{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 4px;margin:0 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],86:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Number.less');
 
-module.exports = Literal.extend('Number', {
+module.exports = Literal.extend('Code-Number', {
     init: function() {
         this.$input = this.$wrapper.find('.number-input');
     },
@@ -4014,7 +4109,7 @@ module.exports = Literal.extend('Number', {
     meta: {
         display: '123'
     },
-    template: "<input type='number' class='number-input'/>",
+    template: "<input type='text' pattern='\\d*' class='number-input'/>",
     focus: function() {
         this.$input.focus();
     },
@@ -4026,9 +4121,9 @@ module.exports = Literal.extend('Number', {
     }
 });
 
-},{"../Literal":80,"./Number.less":83}],83:[function(require,module,exports){
-module.exports=require(39)
-},{}],84:[function(require,module,exports){
+},{"../Literal":84,"./Number.less":87}],87:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Number{color:purple}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],88:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./String.less');
 
@@ -4052,17 +4147,44 @@ module.exports = Literal.extend('String', {
     }
 });
 
-},{"../Literal":80,"./String.less":85}],85:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-String{color:#000;background:#FFFFA1;padding:0;display:inline}.string-input{-moz-user-select:text;-ms-user-select:text;-khtml-user-select:text;-webkit-user-select:text;-o-user-select:text;user-select:text}.string-input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],86:[function(require,module,exports){
+},{"../Literal":84,"./String.less":89}],89:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-String{color:#1B1BD3;background:#FDFDAA;display:inline;padding:.3em}.string-input{-moz-user-select:text;-ms-user-select:text;-khtml-user-select:text;-webkit-user-select:text;-o-user-select:text;user-select:text}.string-input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],90:[function(require,module,exports){
+var Literal     = require('../Literal'),
+    Argument    = require('../../Argument');
+
+require('./Var.less');
+
+module.exports = Literal.extend('Code-Var', {
+    isVar: true,
+    init: function() {
+        this.$name = $("<input type='text' />");
+
+        this.$wrapper
+            .append(this.$name);
+    },
+    meta: {
+        display: "Var"
+    },
+    val: function() {
+        return this.parent('Code-Block').environment.get(this.$name.val());
+    },
+    focus: function() {
+        this.$name.focus();
+    }
+});
+},{"../../Argument":63,"../Literal":84,"./Var.less":91}],91:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Var{background:#00f;color:#fff}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],92:[function(require,module,exports){
 module.exports = [
     require('./String/String'),
     require('./Number/Number'),
     require('./Booleans/True'),
-    require('./Booleans/False')
+    require('./Booleans/False'),
+    require('./Var/Var')
 ];
 
-},{"./Booleans/False":78,"./Booleans/True":79,"./Number/Number":82,"./String/String":84}],87:[function(require,module,exports){
+},{"./Booleans/False":82,"./Booleans/True":83,"./Number/Number":86,"./String/String":88,"./Var/Var":90}],93:[function(require,module,exports){
 module.exports = require('./Boolean').extend('AND', {
     template: "AND",
     run: function(first, second) {
@@ -4070,16 +4192,16 @@ module.exports = require('./Boolean').extend('AND', {
     }
 });
 
-},{"./Boolean":88}],88:[function(require,module,exports){
+},{"./Boolean":94}],94:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Boolean.less');
 
-module.exports = Operator.extend('Boolean', {
+module.exports = Operator.extend('Code-Boolean', {
     precedence: 0
 });
-},{"../Operator":110,"./Boolean.less":89}],89:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Boolean{background:#F53939;font-style:italic}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],90:[function(require,module,exports){
+},{"../Operator":116,"./Boolean.less":95}],95:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Boolean{font-style:italic;color:#BD3BB2;background:rgba(255,231,254,.34);border:1px solid rgba(232,65,255,.15)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],96:[function(require,module,exports){
 module.exports = require('./Boolean').extend('NOT', {
     isSingleOperator:   true,
     template:           "NOT",
@@ -4096,7 +4218,7 @@ module.exports = require('./Boolean').extend('NOT', {
     }
 });
 
-},{"./Boolean":88}],91:[function(require,module,exports){
+},{"./Boolean":94}],97:[function(require,module,exports){
 module.exports = require('./Boolean').extend('OR', {
     template: "OR",
     run: function(first, second) {
@@ -4104,7 +4226,7 @@ module.exports = require('./Boolean').extend('OR', {
     }
 });
 
-},{"./Boolean":88}],92:[function(require,module,exports){
+},{"./Boolean":94}],98:[function(require,module,exports){
 module.exports = require('./Boolean').extend('XOR', {
     template: "XOR",
     run: function(first, second) {
@@ -4112,7 +4234,7 @@ module.exports = require('./Boolean').extend('XOR', {
     }
 });
 
-},{"./Boolean":88}],93:[function(require,module,exports){
+},{"./Boolean":94}],99:[function(require,module,exports){
 module.exports = [
     require('./AND'),
     require('./OR'),
@@ -4120,16 +4242,16 @@ module.exports = [
     require('./NOT')
 ];
 
-},{"./AND":87,"./NOT":90,"./OR":91,"./XOR":92}],94:[function(require,module,exports){
+},{"./AND":93,"./NOT":96,"./OR":97,"./XOR":98}],100:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Comparator.less');
 
-module.exports = Operator.extend('Comparator', {
+module.exports = Operator.extend('Code-Comparator', {
     precedence: 1
 });
-},{"../Operator":110,"./Comparator.less":95}],95:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Comparator{background:#35C062}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],96:[function(require,module,exports){
+},{"../Operator":116,"./Comparator.less":101}],101:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Comparitor{color:#FFF;background:rgba(0,0,0,.75)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],102:[function(require,module,exports){
 module.exports = require('./Comparator').extend('Equals', {
     template: "=",
     run: function(first, second) {
@@ -4137,7 +4259,7 @@ module.exports = require('./Comparator').extend('Equals', {
     }
 });
 
-},{"./Comparator":94}],97:[function(require,module,exports){
+},{"./Comparator":100}],103:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThan', {
     template: ">",
     run: function(first, second) {
@@ -4145,7 +4267,7 @@ module.exports = require('./Comparator').extend('GreaterThan', {
     }
 });
 
-},{"./Comparator":94}],98:[function(require,module,exports){
+},{"./Comparator":100}],104:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThanEquals', {
     template: "&ge;",
     run: function(first, second) {
@@ -4153,14 +4275,14 @@ module.exports = require('./Comparator').extend('GreaterThanEquals', {
     }
 });
 
-},{"./Comparator":94}],99:[function(require,module,exports){
+},{"./Comparator":100}],105:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThan', {
     template: "<",
     run: function(first, second) {
         return first < second;
     }
 });
-},{"./Comparator":94}],100:[function(require,module,exports){
+},{"./Comparator":100}],106:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThanEquals', {
     template: "&le;",
     run: function(first, second) {
@@ -4168,7 +4290,7 @@ module.exports = require('./Comparator').extend('LessThanEquals', {
     }
 });
 
-},{"./Comparator":94}],101:[function(require,module,exports){
+},{"./Comparator":100}],107:[function(require,module,exports){
 module.exports = [
     require('./GreaterThan'),
     require('./GreaterThanEquals'),
@@ -4176,7 +4298,7 @@ module.exports = [
     require('./LessThanEquals'),
     require('./LessThan')
 ];
-},{"./Equals":96,"./GreaterThan":97,"./GreaterThanEquals":98,"./LessThan":99,"./LessThanEquals":100}],102:[function(require,module,exports){
+},{"./Equals":102,"./GreaterThan":103,"./GreaterThanEquals":104,"./LessThan":105,"./LessThanEquals":106}],108:[function(require,module,exports){
 module.exports = require('./Math').extend('Divide', {
     template: "&frasl;",
     precedence: 3,
@@ -4185,22 +4307,22 @@ module.exports = require('./Math').extend('Divide', {
     }
 });
 
-},{"./Math":104}],103:[function(require,module,exports){
+},{"./Math":110}],109:[function(require,module,exports){
 module.exports = require('./Math').extend('Exp', {
     template: "^",
     precedence: 4,
     run: Math.pow
 });
-},{"./Math":104}],104:[function(require,module,exports){
+},{"./Math":110}],110:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Math.less');
 
 module.exports = Operator.extend('Math', {
     
 });
-},{"../Operator":110,"./Math.less":105}],105:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Math{background:#F53939}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],106:[function(require,module,exports){
+},{"../Operator":116,"./Math.less":111}],111:[function(require,module,exports){
+module.exports=require(39)
+},{}],112:[function(require,module,exports){
 module.exports = require('./Math').extend('Minus', {
     template: "-",
     precedence: function(stack, i) {
@@ -4238,7 +4360,7 @@ module.exports = require('./Math').extend('Minus', {
     }
 });
 
-},{"./Math":104}],107:[function(require,module,exports){
+},{"./Math":110}],113:[function(require,module,exports){
 module.exports = require('./Math').extend('Multiply', {
     template: "&times;",
     precedence: 3,
@@ -4247,7 +4369,7 @@ module.exports = require('./Math').extend('Multiply', {
     }
 });
 
-},{"./Math":104}],108:[function(require,module,exports){
+},{"./Math":110}],114:[function(require,module,exports){
 module.exports = require('./Math').extend('Plus', {
     template: "+",
     precedence: 2,
@@ -4256,7 +4378,7 @@ module.exports = require('./Math').extend('Plus', {
     }
 });
 
-},{"./Math":104}],109:[function(require,module,exports){
+},{"./Math":110}],115:[function(require,module,exports){
 module.exports = [
     require('./Exp'),
     require('./Divide'),
@@ -4265,7 +4387,7 @@ module.exports = [
     require('./Plus')
 ];
 
-},{"./Divide":102,"./Exp":103,"./Minus":106,"./Multiply":107,"./Plus":108}],110:[function(require,module,exports){
+},{"./Divide":108,"./Exp":109,"./Minus":112,"./Multiply":113,"./Plus":114}],116:[function(require,module,exports){
 require('./Operator.less');
 
 module.exports = require('../Token').extend('Operator', {
@@ -4273,20 +4395,21 @@ module.exports = require('../Token').extend('Operator', {
     tagName: 'span'
 });
 
-},{"../Token":113,"./Operator.less":111}],111:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Operator{-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 4px;margin:0 1px;display:inline-block}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],112:[function(require,module,exports){
+},{"../Token":119,"./Operator.less":117}],117:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Operator{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 4px;margin:0 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],118:[function(require,module,exports){
 module.exports = require('./Comparators/index').concat(
     require('./Math/index'),
     require('./Boolean/index')
 );
-},{"./Boolean/index":93,"./Comparators/index":101,"./Math/index":109}],113:[function(require,module,exports){
+},{"./Boolean/index":99,"./Comparators/index":107,"./Math/index":115}],119:[function(require,module,exports){
 var subview = require('subview'),
     cursor  = require('../cursor');
 
 require('./Token.less');
 
 module.exports = subview('Code-Token', {
+    isToken: true,
     init: function() {},
     meta: {},
     focus: function() {
@@ -4301,17 +4424,17 @@ module.exports = subview('Code-Token', {
     }
 });
 
-},{"../Components/error":61,"../cursor":116,"./Token.less":114,"subview":25}],114:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Token{color:#FFF}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],115:[function(require,module,exports){
+},{"../Components/error":61,"../cursor":122,"./Token.less":120,"subview":25}],120:[function(require,module,exports){
+module.exports=require(39)
+},{}],121:[function(require,module,exports){
 module.exports = require('./Functions/index').concat(
     require('./Literals/index'),
     require('./Operators/index'),
-    require('./Control/index')
+    require('./Control/index'),
+    require('./Assign/Assign')
 );
-},{"./Control/index":69,"./Functions/index":76,"./Literals/index":86,"./Operators/index":112}],116:[function(require,module,exports){
-var subview = require('subview'),
-    error   = require('./Components/error');
+},{"./Assign/Assign":65,"./Control/index":73,"./Functions/index":80,"./Literals/index":92,"./Operators/index":118}],122:[function(require,module,exports){
+var subview = require('subview');
 
 require('./cursor.less');
 
@@ -4320,13 +4443,11 @@ var Cursor = subview('Code-Cursor', {
         var self = this;
 
         $(document).on('focus', 'input, div', function() {
-            self.$wrapper.hide();
+            self.hide();
         });
     },
     paste: function(type) {
-        //Make sure the cursor is shown
-        this.$wrapper.show();
-        $(':focus').blur();
+        this.show();
 
         //Get the type
         var Type = subview.lookup(type);
@@ -4350,14 +4471,25 @@ var Cursor = subview('Code-Cursor', {
         
         return this;
     },
-    error: error
+    show: function() {
+        this.$wrapper.css('display', 'inline-block');
+        $(':focus').blur();
+    },
+    hide: function() {
+        this.$wrapper.css('display', 'none');
+    },
+    appendTo: function($el) {
+        this.show();
+        $el.append(this.$wrapper);
+    },
+    error: require('./Components/error')
 });
 
 module.exports = Cursor.spawn();
 
-},{"./Components/error":61,"./cursor.less":117,"subview":25}],117:[function(require,module,exports){
+},{"./Components/error":61,"./cursor.less":123,"subview":25}],123:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@-webkit-keyframes flash{0%,100%{opacity:1}50%{opacity:0}}.view-Code-Cursor{position:relative;display:inline-block;width:2px;height:1.1em;margin:-.05em -1px;top:.05em;background:#1279FC;-webkit-animation:flash 1s infinite}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],118:[function(require,module,exports){
+},{}],124:[function(require,module,exports){
 var subview = require('subview'),
     prefix  = require('prefix'),
     $       = require('unopinionate').selector;
@@ -4453,9 +4585,9 @@ module.exports = subview('Slider', {
 
 });
 
-},{"./Slider.less":119,"prefix":19,"subview":25,"unopinionate":26}],119:[function(require,module,exports){
+},{"./Slider.less":125,"prefix":19,"subview":25,"unopinionate":26}],125:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Slider{position:relative;width:100%;height:100%;overflow:hidden}.Slider-Slider{position:absolute;left:0;top:0;height:100%;white-space:nowrap}.Slider-Panel{display:inline-block;position:relative;height:100%;vertical-align:top;white-space:normal}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],120:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 var subview     = require('subview'),
     click    = require('onclick');
 
@@ -4463,9 +4595,9 @@ require('./Toolbar.less');
 
 module.exports = subview("Toolbar");
 
-},{"./Toolbar.less":121,"onclick":10,"subview":25}],121:[function(require,module,exports){
+},{"./Toolbar.less":127,"onclick":10,"subview":25}],127:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Toolbar{position:absolute;height:50px;width:100%;background:#F1F0F0;border-bottom:solid 1px #CCC;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding-top:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],122:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4476,7 +4608,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   else { helper = (depth0 && depth0.msg); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
   return escapeExpression(stack1);
   });
-},{"handlebars/runtime":8}],123:[function(require,module,exports){
+},{"handlebars/runtime":8}],129:[function(require,module,exports){
 var subview = require('subview'),
     $       = require('unopinionate').selector;
 
@@ -4575,9 +4707,9 @@ module.exports = subview('Tooltip', {
     },
     $arrow: $("<div class='Tooltip-arrow'>")
 });
-},{"./Tooltip.handlebars":122,"./Tooltip.less":124,"subview":25,"unopinionate":26}],124:[function(require,module,exports){
+},{"./Tooltip.handlebars":128,"./Tooltip.less":130,"subview":25,"unopinionate":26}],130:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Tooltip{position:absolute;max-width:100%;max-height:100%;overflow:auto}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],125:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 var Slider = require('./UI/Slider/Slider');
 
 require('./main.less');
@@ -4615,6 +4747,6 @@ module.exports = Slider.extend('main', {
     defaultPanel: 'editor'
 });
 
-},{"./Editor/Editor":28,"./Files/Files":38,"./Run/Run":44,"./UI/Slider/Slider":118,"./main.less":126}],126:[function(require,module,exports){
+},{"./Editor/Editor":28,"./Files/Files":38,"./Run/Run":44,"./UI/Slider/Slider":124,"./main.less":132}],132:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "body,html{height:100%;width:100%}body{-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none;margin:0;position:absolute;font-family:Avenir,\"Helvetica Neue\",Helvetica,sans-serif}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}]},{},[1])

@@ -1,7 +1,7 @@
 var Literal = require('../Literal');
 require('./Number.less');
 
-module.exports = Literal.extend('Number', {
+module.exports = Literal.extend('Code-Number', {
     init: function() {
         this.$input = this.$wrapper.find('.number-input');
     },
@@ -9,7 +9,7 @@ module.exports = Literal.extend('Number', {
     meta: {
         display: '123'
     },
-    template: "<input type='number' class='number-input'/>",
+    template: "<input type='text' pattern='\\d*' class='number-input'/>",
     focus: function() {
         this.$input.focus();
     },

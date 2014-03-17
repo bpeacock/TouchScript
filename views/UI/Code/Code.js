@@ -13,7 +13,11 @@ module.exports = Block.extend('Code', {
         return this;
     },
     beforeRun: function() {
+        this.running = true;
         this.environment.clear();
+    },
+    kill: function() {
+        this.running = false;
     },
 
     /*** Events ***/

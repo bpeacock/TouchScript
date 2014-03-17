@@ -1,5 +1,6 @@
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
-    click    = require('onclick');
+    click    = require('onclick'),
+    code     = require('../../Editor/code');
 
 require('./Toolbar.less');
 
@@ -9,6 +10,7 @@ module.exports = Toolbar.extend('Run-Toolbar', {
 
         click({
             '.Run-Toolbar-exit': function() {
+                code.kill();
                 self.trigger('edit');
             }
         });

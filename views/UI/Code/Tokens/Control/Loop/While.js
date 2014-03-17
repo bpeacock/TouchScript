@@ -23,9 +23,17 @@ module.exports = Control.extend('Code-While', {
         display: 'while'
     },
     run: function() {
-        while(this.condition.run()) {
-            this.block.run();
-        }
+        var self = this,
+            code = this.parent('Code');
+        
+        var loop = setInterval(function() {
+            if(self.condition.run() && code.running) {
+                self.block.run();
+            }
+            else {
+                clearInterval(loop);
+            }
+        }, 0);
     },
     focus: function() {
         this.condition.focus();

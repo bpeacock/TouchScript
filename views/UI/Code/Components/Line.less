@@ -22,8 +22,42 @@
     left: -@overlap;
     padding-left: @overlap + 4px;
     padding-top: .1em;
-    background: #F1F0F0;
-    border-right: 1px solid #CCC;
+    background: rgba(241, 240, 240, 0.53);
+    border-right: 1px solid rgba(0, 0, 0, 0.15);
     color: #555;
     .border-box;
 }
+
+/* 
+
+.view-Code {
+    counter-reset: lineNumber;
+}
+
+@numberWidth: 30px;
+.view-Code-Line {
+    margin-left: @numberWidth;
+    .border-box;
+}
+
+.view-Code-Line .view-Code-Line {
+    border-left: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.view-Code-Line:before {
+    font-family: Consolas, monaco, monospace;
+    counter-increment: lineNumber;
+    content: counter(lineNumber);
+
+    position: absolute;
+    width: @numberWidth;
+    left: 0;
+    padding-left: 4px;
+    padding-top: .1em;
+    background: #FAFAFA;
+    border-right: 1px solid #D8D7D7;
+    color: #555;
+    .border-box;
+}
+
+*/
