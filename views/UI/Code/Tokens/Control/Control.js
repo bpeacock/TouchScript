@@ -13,7 +13,7 @@ module.exports = require('../Token').extend('Code-Control', {
             return true;
         }
         else {
-            cursor.error(this.type + ' must go on its own line.');
+            cursor.error('A ' + this.meta.name + ' must go on its own line.');
             return false;
         }
     }

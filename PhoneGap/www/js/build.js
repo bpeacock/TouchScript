@@ -22,7 +22,46 @@ window.app = {
     }
 };
 
-},{"../../../views/main.js":131,"subview":25}],2:[function(require,module,exports){
+},{"../../../views/main.js":136,"subview":27}],2:[function(require,module,exports){
+var Files = function() {
+    setTimeout(function() {
+        window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+
+        if(window.requestFileSystem) {
+            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+                var directoryReader = fs.root.createReader();
+                directoryReader.readEntries(function(entries) {
+                    var i;
+                    for (i=0; i<entries.length; i++) {
+                        console.log(entries[i].name);
+                    }
+                }, function (error) {
+                    alert(error.code);
+                });
+            }, function (error) {
+                alert(error.code);
+            });
+        }
+        else {
+            console.warn("No local file system");
+        }
+    }, 1000);
+};
+
+Files.prototype = {
+    list: function() {
+        return [];
+    }
+};
+
+module.exports = Files;
+},{}],3:[function(require,module,exports){
+var Files = require('./Files');
+
+module.exports = new Files({
+    
+});
+},{"./Files":2}],4:[function(require,module,exports){
 "use strict";
 /*globals Handlebars: true */
 var base = require("./handlebars/base");
@@ -55,7 +94,7 @@ var Handlebars = create();
 Handlebars.create = create;
 
 exports["default"] = Handlebars;
-},{"./handlebars/base":3,"./handlebars/exception":4,"./handlebars/runtime":5,"./handlebars/safe-string":6,"./handlebars/utils":7}],3:[function(require,module,exports){
+},{"./handlebars/base":5,"./handlebars/exception":6,"./handlebars/runtime":7,"./handlebars/safe-string":8,"./handlebars/utils":9}],5:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -236,7 +275,7 @@ exports.log = log;var createFrame = function(object) {
   return obj;
 };
 exports.createFrame = createFrame;
-},{"./exception":4,"./utils":7}],4:[function(require,module,exports){
+},{"./exception":6,"./utils":9}],6:[function(require,module,exports){
 "use strict";
 
 var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
@@ -265,7 +304,7 @@ function Exception(message, node) {
 Exception.prototype = new Error();
 
 exports["default"] = Exception;
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 var Utils = require("./utils");
 var Exception = require("./exception")["default"];
@@ -403,7 +442,7 @@ exports.program = program;function invokePartial(partial, name, context, helpers
 exports.invokePartial = invokePartial;function noop() { return ""; }
 
 exports.noop = noop;
-},{"./base":3,"./exception":4,"./utils":7}],6:[function(require,module,exports){
+},{"./base":5,"./exception":6,"./utils":9}],8:[function(require,module,exports){
 "use strict";
 // Build out our basic SafeString type
 function SafeString(string) {
@@ -415,7 +454,7 @@ SafeString.prototype.toString = function() {
 };
 
 exports["default"] = SafeString;
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 /*jshint -W004 */
 var SafeString = require("./safe-string")["default"];
@@ -492,12 +531,12 @@ exports.escapeExpression = escapeExpression;function isEmpty(value) {
 }
 
 exports.isEmpty = isEmpty;
-},{"./safe-string":6}],8:[function(require,module,exports){
+},{"./safe-string":8}],10:[function(require,module,exports){
 // Create a simple path alias to allow browserify to resolve
 // the runtime on a supported path.
 module.exports = require('./dist/cjs/handlebars.runtime');
 
-},{"./dist/cjs/handlebars.runtime":2}],9:[function(require,module,exports){
+},{"./dist/cjs/handlebars.runtime":4}],11:[function(require,module,exports){
 (function (global){
 (function(root) {
     var unopinionate = {
@@ -524,7 +563,7 @@ module.exports = require('./dist/cjs/handlebars.runtime');
 })(typeof window != 'undefined' ? window : global);
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var $ = require('unopinionate').selector;
 
 var $document   = $(document),
@@ -665,9 +704,9 @@ click._getPos = function(e) {
 module.exports = click;
 
 
-},{"unopinionate":9}],11:[function(require,module,exports){
-module.exports=require(9)
-},{}],12:[function(require,module,exports){
+},{"unopinionate":11}],13:[function(require,module,exports){
+module.exports=require(11)
+},{}],14:[function(require,module,exports){
 var $ = require('unopinionate').selector,
     $document = $(document);
 
@@ -681,7 +720,7 @@ Drag.prototype = {
 
 module.exports = Drag;
 
-},{"unopinionate":11}],13:[function(require,module,exports){
+},{"unopinionate":13}],15:[function(require,module,exports){
 var $ = require('unopinionate').selector;
 
 var Drop = function(selector, config) {
@@ -693,7 +732,7 @@ Drop.prototype = {
 };
 
 module.exports = Drop;
-},{"unopinionate":11}],14:[function(require,module,exports){
+},{"unopinionate":13}],16:[function(require,module,exports){
 var Drag = require("./Drag"),
     Drop = require("./Drop");
 
@@ -730,9 +769,9 @@ drag.drop = function(selector, config) {
 
 module.exports = drag;
 
-},{"./Drag":12,"./Drop":13}],15:[function(require,module,exports){
-module.exports=require(9)
-},{}],16:[function(require,module,exports){
+},{"./Drag":14,"./Drop":15}],17:[function(require,module,exports){
+module.exports=require(11)
+},{}],18:[function(require,module,exports){
 var $ = require('unopinionate').selector,
         specialKeys = require('./specialKeys');
 
@@ -740,7 +779,6 @@ var $window = $(window);
 
 var Event = function(selector) {
     this.selector   = selector;
-    this.$scope     = selector ? $(selector) : $window;
     this.callbacks  = [];
     this.active     = true;
 };
@@ -777,7 +815,7 @@ Event.prototype = {
         return this;
     },
     destroy: function() {
-        this.$scope
+        $window
             .unbind('keydown')
             .unbind('keyup');
     },
@@ -789,7 +827,7 @@ Event.prototype = {
         if(!this.callbacks[type]) {
             this.callbacks[type] = [];
 
-            this.$scope.bind('key' + type, function(e) {
+            $window.bind('key' + type, this.selector, function(e) {
                 if(self.active) {
                     var callbacks = self.callbacks[type];
 
@@ -872,7 +910,7 @@ Event.prototype = {
 module.exports = Event;
 
 
-},{"./specialKeys":18,"unopinionate":15}],17:[function(require,module,exports){
+},{"./specialKeys":20,"unopinionate":17}],19:[function(require,module,exports){
 var Event = require('./Event.js'),
     events = [];
 
@@ -905,7 +943,7 @@ key._createEvent = function(selector) {
 
 module.exports = key;
 
-},{"./Event.js":16}],18:[function(require,module,exports){
+},{"./Event.js":18}],20:[function(require,module,exports){
 //Adopted from [jQuery hotkeys](https://github.com/jeresig/jquery.hotkeys/blob/master/jquery.hotkeys.js)
 
 module.exports = {
@@ -973,7 +1011,7 @@ module.exports = {
     224: "meta"
 };
 
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 
 var style = document.createElement('p').style
 var prefixes = 'O ms Moz webkit'.split(' ')
@@ -1046,7 +1084,7 @@ function dashedPrefix(key){
   return key.toLowerCase()
 }
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /*
  * loglevel - https://github.com/pimterry/loglevel
  *
@@ -1229,7 +1267,7 @@ function dashedPrefix(key){
     }));
 })();
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 //     Underscore.js 1.5.2
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2507,7 +2545,7 @@ function dashedPrefix(key){
 
 }).call(this);
 
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var log = require("loglevel"),
     _   = require("underscore");
 
@@ -2690,7 +2728,7 @@ State.prototype = {
 module.exports = State;
 
 
-},{"loglevel":20,"underscore":21}],23:[function(require,module,exports){
+},{"loglevel":22,"underscore":23}],25:[function(require,module,exports){
 var _           = require('underscore'),
     log         = require('loglevel');
 
@@ -2975,7 +3013,7 @@ View.prototype = {
 module.exports = View;
 
 
-},{"loglevel":20,"underscore":21}],24:[function(require,module,exports){
+},{"loglevel":22,"underscore":23}],26:[function(require,module,exports){
 var State = require("./State"),
     $     = require("unopinionate").selector;
 
@@ -3052,7 +3090,7 @@ ViewPool.prototype = {
 
 module.exports = ViewPool;
 
-},{"./State":22,"unopinionate":26}],25:[function(require,module,exports){
+},{"./State":24,"unopinionate":28}],27:[function(require,module,exports){
 var _               = require("underscore"),
     log             = require("loglevel"),
     $               = require("unopinionate").selector,
@@ -3184,9 +3222,9 @@ $(function() {
 });
 
 
-},{"./View":23,"./ViewPool":24,"loglevel":20,"underscore":21,"unopinionate":26}],26:[function(require,module,exports){
-module.exports=require(9)
-},{}],27:[function(require,module,exports){
+},{"./View":25,"./ViewPool":26,"loglevel":22,"underscore":23,"unopinionate":28}],28:[function(require,module,exports){
+module.exports=require(11)
+},{}],29:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -3203,7 +3241,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if(stack1 || stack1 === 0) { buffer += stack1; }
   return buffer;
   });
-},{"handlebars/runtime":8}],28:[function(require,module,exports){
+},{"handlebars/runtime":10}],30:[function(require,module,exports){
 var subview = require('subview');
 require('./Editor.less');
 
@@ -3216,18 +3254,18 @@ module.exports = subview('Editor', {
     }
 });
 
-},{"./Editor.handlebars":27,"./Editor.less":29,"./Toolbar/Toolbar":31,"./Tray/Tray":34,"./code":36,"subview":25}],29:[function(require,module,exports){
+},{"./Editor.handlebars":29,"./Editor.less":31,"./Toolbar/Toolbar":33,"./Tray/Tray":36,"./code":38,"subview":27}],31:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Toolbar{position:absolute;height:50px;width:100%}.view-Code{position:absolute;bottom:150px;top:50px;width:100%}.view-Tray{position:absolute;height:150px;bottom:0;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],30:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   
 
 
-  return "<button class='Editor-Toolbar-open'>Open</button>\n\n<button class='Editor-Toolbar-run'>&#9658;</button>";
+  return "<button class='Editor-Toolbar-open'>Open</button>\n\n<button class='Editor-Toolbar-run'>Run</button>";
   });
-},{"handlebars/runtime":8}],31:[function(require,module,exports){
+},{"handlebars/runtime":10}],33:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
     click    = require('onclick'),
     code     = require('../code'),
@@ -3257,9 +3295,9 @@ module.exports = Toolbar.extend('Editor-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../Run/terminal":51,"../../UI/Toolbar/Toolbar":126,"../code":36,"./Toolbar.handlebars":30,"./Toolbar.less":32,"onclick":10}],32:[function(require,module,exports){
+},{"../../Run/terminal":56,"../../UI/Toolbar/Toolbar":131,"../code":38,"./Toolbar.handlebars":32,"./Toolbar.less":34,"onclick":12}],34:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Editor-Toolbar-run{float:right}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],33:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -3284,7 +3322,7 @@ function program1(depth0,data) {
   if(stack1 || stack1 === 0) { return stack1; }
   else { return ''; }
   });
-},{"handlebars/runtime":8}],34:[function(require,module,exports){
+},{"handlebars/runtime":10}],36:[function(require,module,exports){
 var subview = require('subview'),
     buttons = require('../../UI/Code/Tokens/index'),
     drag    = require('ondrag'),
@@ -3340,9 +3378,9 @@ module.exports = subview('Tray', {
         };
     }
 });
-},{"../../UI/Code/Tokens/index":121,"../../UI/Code/cursor":122,"./Tray.handlebars":33,"./Tray.less":35,"onclick":10,"ondrag":14,"subview":25}],35:[function(require,module,exports){
+},{"../../UI/Code/Tokens/index":126,"../../UI/Code/cursor":127,"./Tray.handlebars":35,"./Tray.less":37,"onclick":12,"ondrag":16,"subview":27}],37:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Tray{background:#F1F0F0;padding:5px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.Tray-Button{display:inline-block;padding:2px 5px;margin:2px 0;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;background:#1075F6;color:#fff;cursor:pointer}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],36:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 var code = require('../UI/Code/Code').spawn();
 
 code.configure({
@@ -3354,18 +3392,47 @@ code.configure({
 
 module.exports = code;
 
-},{"../Run/terminal":51,"../UI/Code/Code":52}],37:[function(require,module,exports){
+},{"../Run/terminal":56,"../UI/Code/Code":57}],39:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var stack1, functionType="function";
+  var buffer = "";
+
+
+  return buffer;
+  });
+},{"handlebars/runtime":10}],40:[function(require,module,exports){
+var subview = require('subview'),
+    programs = require("../../../models/programs");
+
+require('./FileSystem.less');
+
+module.exports = subview('FileSystem', {
+    data: {
+        programs: programs.list()
+    },
+    template: require('./FileSystem.handlebars'),
+    init: function() {
+
+    }
+});
+},{"../../../models/programs":3,"./FileSystem.handlebars":39,"./FileSystem.less":41,"subview":27}],41:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],42:[function(require,module,exports){
+var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, functionType="function";
 
 
   stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.Toolbar)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
-  if(stack1 || stack1 === 0) { return stack1; }
-  else { return ''; }
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n";
+  stack1 = ((stack1 = ((stack1 = (depth0 && depth0.subview)),stack1 == null || stack1 === false ? stack1 : stack1.FileSystem)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1);
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  return buffer;
   });
-},{"handlebars/runtime":8}],38:[function(require,module,exports){
+},{"handlebars/runtime":10}],43:[function(require,module,exports){
 var subview = require('subview');
 
 require('./Files.less');
@@ -3373,13 +3440,14 @@ require('./Files.less');
 module.exports = subview('Files', {
     template: require('./Files.handlebars'),
     subviews: {
-        Toolbar: require('./Toolbar/Toolbar')
+        Toolbar:    require('./Toolbar/Toolbar'),
+        FileSystem: require('./FileSystem/FileSystem')
     }
 });
 
-},{"./Files.handlebars":37,"./Files.less":39,"./Toolbar/Toolbar":41,"subview":25}],39:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],40:[function(require,module,exports){
+},{"./FileSystem/FileSystem":40,"./Files.handlebars":42,"./Files.less":44,"./Toolbar/Toolbar":46,"subview":27}],44:[function(require,module,exports){
+module.exports=require(41)
+},{}],45:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -3388,7 +3456,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
   return "<button class='Files-Toolbar-new'>New</button>\n\n<button class='Files-Toolbar-delete'>Delete</button>";
   });
-},{"handlebars/runtime":8}],41:[function(require,module,exports){
+},{"handlebars/runtime":10}],46:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
     click    = require('onclick');
 
@@ -3410,9 +3478,9 @@ module.exports = Toolbar.extend('Files-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../UI/Toolbar/Toolbar":126,"./Toolbar.handlebars":40,"./Toolbar.less":42,"onclick":10}],42:[function(require,module,exports){
+},{"../../UI/Toolbar/Toolbar":131,"./Toolbar.handlebars":45,"./Toolbar.less":47,"onclick":12}],47:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Files-Toolbar-delete{float:right}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],43:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -3426,7 +3494,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if(stack1 || stack1 === 0) { buffer += stack1; }
   return buffer;
   });
-},{"handlebars/runtime":8}],44:[function(require,module,exports){
+},{"handlebars/runtime":10}],49:[function(require,module,exports){
 var subview = require('subview');
 
 require('./Run.less');
@@ -3439,9 +3507,9 @@ module.exports = subview('Run', {
     }
 });
 
-},{"./Run.handlebars":43,"./Run.less":45,"./Toolbar/Toolbar":49,"./terminal":51,"subview":25}],45:[function(require,module,exports){
+},{"./Run.handlebars":48,"./Run.less":50,"./Toolbar/Toolbar":54,"./terminal":56,"subview":27}],50:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Run-Terminal{position:absolute;top:50px;bottom:0;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],46:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 var subview = require('subview'),
     key     = require('onkey');
 
@@ -3471,9 +3539,9 @@ module.exports = subview("Run-Terminal", {
     }
 });
 
-},{"./Terminal.less":47,"onkey":17,"subview":25}],47:[function(require,module,exports){
-module.exports=require(39)
-},{}],48:[function(require,module,exports){
+},{"./Terminal.less":52,"onkey":19,"subview":27}],52:[function(require,module,exports){
+module.exports=require(41)
+},{}],53:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -3482,7 +3550,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
   return "<button class='Run-Toolbar-exit'>Exit</button>\n";
   });
-},{"handlebars/runtime":8}],49:[function(require,module,exports){
+},{"handlebars/runtime":10}],54:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
     click    = require('onclick'),
     code     = require('../../Editor/code');
@@ -3503,12 +3571,12 @@ module.exports = Toolbar.extend('Run-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../Editor/code":36,"../../UI/Toolbar/Toolbar":126,"./Toolbar.handlebars":48,"./Toolbar.less":50,"onclick":10}],50:[function(require,module,exports){
-module.exports=require(39)
-},{}],51:[function(require,module,exports){
+},{"../../Editor/code":38,"../../UI/Toolbar/Toolbar":131,"./Toolbar.handlebars":53,"./Toolbar.less":55,"onclick":12}],55:[function(require,module,exports){
+module.exports=require(41)
+},{}],56:[function(require,module,exports){
 module.exports = require('./Terminal/Terminal').spawn();
 
-},{"./Terminal/Terminal":46}],52:[function(require,module,exports){
+},{"./Terminal/Terminal":51}],57:[function(require,module,exports){
 var Block = require('./Components/Block');
 require('./Code.less');
 
@@ -3535,9 +3603,9 @@ module.exports = Block.extend('Code', {
     onError: noop
 });
 
-},{"./Code.less":53,"./Components/Block":54}],53:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{overflow:auto;font-family:Consolas,monaco,monospace;line-height:1.6em}.view-Code-Line{min-height:1.6em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],54:[function(require,module,exports){
+},{"./Code.less":58,"./Components/Block":59}],58:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{overflow:auto;font-family:Consolas,monaco,monospace;line-height:1.6em;-webkit-tap-highlight-color:rgba(0,0,0,0);-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none}.view-Code-Line{min-height:1.6em}[contenteditable=true]{-moz-user-select:text;-ms-user-select:text;-khtml-user-select:text;-webkit-user-select:text;-o-user-select:text;user-select:text}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],59:[function(require,module,exports){
 var subview     = require('subview'),
     cursor      = require('../cursor'),
     Line        = require('./Line'),
@@ -3591,9 +3659,9 @@ module.exports = subview('Code-Block', {
     }
 });
 
-},{"../cursor":122,"./Block.less":55,"./EnvironmentModel":56,"./Line":59,"subview":25}],55:[function(require,module,exports){
+},{"../cursor":127,"./Block.less":60,"./EnvironmentModel":61,"./Line":64,"subview":27}],60:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Block{background:rgba(255,255,255,.36);-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px;color:#111}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],56:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 var Environment = function() {
     this.clear();
 };
@@ -3611,7 +3679,7 @@ Environment.prototype = {
 };
 
 module.exports = Environment;
-},{}],57:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 var subview = require('subview'),
     cursor  = require('../cursor');
 
@@ -3717,9 +3785,9 @@ module.exports = subview('Code-Field', {
     error: require('./error')
 });
 
-},{"../cursor":122,"./Field.less":58,"./error":61,"subview":25}],58:[function(require,module,exports){
-module.exports=require(39)
-},{}],59:[function(require,module,exports){
+},{"../cursor":127,"./Field.less":63,"./error":66,"subview":27}],63:[function(require,module,exports){
+module.exports=require(41)
+},{}],64:[function(require,module,exports){
 var Field = require('./Field');
 
 require('./Line.less');
@@ -3730,9 +3798,9 @@ module.exports = Field.extend('Code-Line', {
     }
 });
 
-},{"./Field":57,"./Line.less":60}],60:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{counter-reset:lineNumber}.view-Code-Line{position:relative;padding-left:30px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.view-Code-Line:before{font-family:Consolas,monaco,monospace;counter-increment:lineNumber;content:counter(lineNumber);position:absolute;height:100%;width:34px;left:-4px;padding-left:8px;padding-top:.1em;background:rgba(177,177,177,.07);border-right:1px solid rgba(128,128,128,.19);color:#555;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],61:[function(require,module,exports){
+},{"./Field":62,"./Line.less":65}],65:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{counter-reset:lineNumber}.view-Code-Line{position:relative;padding-left:30px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.view-Code-Line:before{font-family:Consolas,monaco,monospace;counter-increment:lineNumber;content:counter(lineNumber);position:absolute;height:100%;width:34px;left:-4px;padding-left:8px;padding-top:.1em;background:rgba(241,240,240,.53);border-right:1px solid rgba(0,0,0,.15);color:#555;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],66:[function(require,module,exports){
 var Tooltip = require('../../Tooltip/Tooltip'),
     subview = require('subview');
 
@@ -3749,13 +3817,13 @@ module.exports = function(msg) {
     });
 };
 
-},{"../../Tooltip/Tooltip":129,"./error.less":62,"subview":25}],62:[function(require,module,exports){
+},{"../../Tooltip/Tooltip":134,"./error.less":67,"subview":27}],67:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Error{background:#F70000;color:#fff;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding:2px 6px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],63:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 var Field = require('../Components/Field');
 require('./Argument.less');
 
-module.exports = Field.extend('Argument', {
+module.exports = Field.extend('Code-Argument', {
     init: function(config) {
         config = config || {};
         
@@ -3766,39 +3834,50 @@ module.exports = Field.extend('Argument', {
     tagName: 'span'
 });
 
-},{"../Components/Field":57,"./Argument.less":64}],64:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Argument{background:rgba(255,255,255,.47);padding:.3em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],65:[function(require,module,exports){
+},{"../Components/Field":62,"./Argument.less":69}],69:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Argument{background:rgba(255,255,255,.5);padding:.3em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],70:[function(require,module,exports){
 var Token       = require('../Token'),
-    Argument    = require('../Argument');
+    Argument    = require('../Argument'),
+    Var         = require('../Literals/Var/Var'),
+    key         = require('onkey');
 
 require('./Assign.less');
 
+//Prevent Enter
+key('.Code-Assign-Var').down({
+    'enter': function(e) {
+        e.preventDefault();
+    }
+});
+
 module.exports = Token.extend('Code-Assign', {
     init: function() {
-        this.$name = $("<input type='text' />");
-        this.value = Argument.spawn();
+        this.name   = Var.spawn();
+        this.value  = Argument.spawn();
+
+        this.name.$wrapper.removeClass('view-Code-Token');
 
         this.$wrapper
-            .append(this.$name)
-            .append(' = ')
+            .append(this.name.$wrapper)
+            .append(' &rArr; ')
             .append(this.value.$wrapper);
     },
     meta: {
-        display: "Assign"
+        display: "&rArr;"
     },
     run: function() {
         var value = this.value.run();
-        this.parent('Code-Block').environment.set(this.$name.val(), value);
+        this.parent('Code-Block').environment.set(this.name.name(), value);
         return value;
     },
     focus: function() {
-        this.$name.focus();
+        this.name.focus();
     }
 });
-},{"../Argument":63,"../Token":119,"./Assign.less":66}],66:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Assign{background:#87F08B;display:inline-block;padding:2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],67:[function(require,module,exports){
+},{"../Argument":68,"../Literals/Var/Var":95,"../Token":124,"./Assign.less":71,"onkey":19}],71:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Assign{background:#87F08B;display:inline;padding:.3em 0 .3em 2px;margin:0 2px;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],72:[function(require,module,exports){
 var Control  = require('../Control'),
     Argument = require('../../Argument'),
     Block    = require('../../../Components/Block');
@@ -3822,7 +3901,7 @@ module.exports = Control.extend('Code-Conditional', {
             block: Block.spawn()
         };
 
-        //Build Condition
+        //Build Condition Objects
         if(type == "else") {
             this.elseCondition = condition;
         }
@@ -3835,21 +3914,25 @@ module.exports = Control.extend('Code-Conditional', {
         }
         
         //Append to Wrapper
-        var $condition = $("<div class='conditional-block'></div>");
+        var $condition = $("<div class='Code-Conditional-Block'>");
+            $conditionHeader = $("<div class='Code-Control-Header'>");
 
-        $condition.append(
+
+        $conditionHeader.append(
             type == "else" ? "else:" :
             type == "else if" ? "else if " :
             type == "if" ? "if " : ""
         );
         
         if(type != "else") {
-            $condition
+            $conditionHeader
                 .append(condition.arg.$wrapper)
                 .append(" then:");
         }
             
-        $condition.append(condition.block.$wrapper);
+        $condition
+            .append($conditionHeader)
+            .append(condition.block.$wrapper);
 
         this.$wrapper.append($condition);
 
@@ -3876,9 +3959,9 @@ module.exports = Control.extend('Code-Conditional', {
     }
 });
 
-},{"../../../Components/Block":54,"../../Argument":63,"../Control":69,"./Conditional.less":68}],68:[function(require,module,exports){
+},{"../../../Components/Block":59,"../../Argument":68,"../Control":74,"./Conditional.less":73}],73:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Conditional{background:#BDE2FF;color:#19297C}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],69:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 require('./Control.less');
 
 module.exports = require('../Token').extend('Code-Control', {
@@ -3900,9 +3983,9 @@ module.exports = require('../Token').extend('Code-Control', {
     }
 });
 
-},{"../Token":119,"./Control.less":70}],70:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Control{background:#FFB2B2;color:#880A0A;padding:.05em 0 0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],71:[function(require,module,exports){
+},{"../Token":124,"./Control.less":75}],75:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Control{background:#FFB2B2;color:#880A0A;padding:.05em 0 0}.Code-Control-Header{padding:2px 4px}.Code-Control-Header .view-Code-Argument{-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:.3em 2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],76:[function(require,module,exports){
 var Control  = require('../Control'),
     Argument = require('../../Argument'),
     Block    = require('../../../Components/Block');
@@ -3918,10 +4001,13 @@ module.exports = Control.extend('Code-While', {
         this.block = Block.spawn();
 
         //Build the Wrapper
-        this.$wrapper
+        var $header = $("<div class='Code-Control-Header'>")
             .append("while ")
             .append(this.condition.$wrapper)
-            .append(':')
+            .append(':');
+        
+        this.$wrapper
+            .append($header)
             .append(this.block.$wrapper);
     },
     meta: {
@@ -3945,14 +4031,14 @@ module.exports = Control.extend('Code-While', {
     }
 });
 
-},{"../../../Components/Block":54,"../../Argument":63,"../Control":69,"./While.less":72}],72:[function(require,module,exports){
-module.exports=require(39)
-},{}],73:[function(require,module,exports){
+},{"../../../Components/Block":59,"../../Argument":68,"../Control":74,"./While.less":77}],77:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-While .Code-Control-Header .view-Code-Argument{padding:.2em 2px .3em;top:-.05em;position:relative}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],78:[function(require,module,exports){
 module.exports = [
     require("./Conditional/Conditional"),
     require("./Loop/While")
 ];
-},{"./Conditional/Conditional":67,"./Loop/While":71}],74:[function(require,module,exports){
+},{"./Conditional/Conditional":72,"./Loop/While":76}],79:[function(require,module,exports){
 var Argument = require('../Argument'),
     cursor   = require('../../cursor');
 
@@ -4000,9 +4086,9 @@ module.exports = require('../Token').extend('Function', {
     }
 });
 
-},{"../../cursor":122,"../Argument":63,"../Token":119,"./Function.less":75}],75:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Function{display:inline;background:#D3FFC5;color:#2C2C2C;padding:.3em;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],76:[function(require,module,exports){
+},{"../../cursor":127,"../Argument":68,"../Token":124,"./Function.less":80}],80:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Function{display:inline;background:#D3FFC5;color:#2C2C2C;padding:.3em;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;margin:0 2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],81:[function(require,module,exports){
 var Func = require('../Function');
 
 require('./Parentheses.less');
@@ -4020,9 +4106,9 @@ module.exports = Func.extend('Parentheses', {
         }
     ]
 });
-},{"../Function":74,"./Parentheses.less":77}],77:[function(require,module,exports){
+},{"../Function":79,"./Parentheses.less":82}],82:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Parentheses{color:#000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],78:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 var Func = require('../Function');
 
 require('./Print.less');
@@ -4047,17 +4133,17 @@ module.exports = Func.extend('print', {
     }
 });
 
-},{"../Function":74,"./Print.less":79}],79:[function(require,module,exports){
-module.exports=require(39)
-},{}],80:[function(require,module,exports){
+},{"../Function":79,"./Print.less":84}],84:[function(require,module,exports){
+module.exports=require(41)
+},{}],85:[function(require,module,exports){
 module.exports = [
     require('./Print/Print'),
     require('./Parentheses/Parentheses')
 ];
 
-},{"./Parentheses/Parentheses":76,"./Print/Print":78}],81:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-false,.view-true{color:#FFF;background:#53AEF7}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],82:[function(require,module,exports){
+},{"./Parentheses/Parentheses":81,"./Print/Print":83}],86:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-false,.view-true{color:#FFF;background:#53AEF7;line-height:1.3em;margin:.15em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],87:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -4072,7 +4158,7 @@ module.exports = Literal.extend('false', {
     }
 });
 
-},{"../Literal":84,"./Boolean.less":81}],83:[function(require,module,exports){
+},{"../Literal":89,"./Boolean.less":86}],88:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -4087,7 +4173,7 @@ module.exports = Literal.extend('true', {
     }
 });
 
-},{"../Literal":84,"./Boolean.less":81}],84:[function(require,module,exports){
+},{"../Literal":89,"./Boolean.less":86}],89:[function(require,module,exports){
 require('./Literal.less');
 
 module.exports = require('../Token').extend('Literal', {
@@ -4095,9 +4181,9 @@ module.exports = require('../Token').extend('Literal', {
     val: function() {}
 });
 
-},{"../Token":119,"./Literal.less":85}],85:[function(require,module,exports){
+},{"../Token":124,"./Literal.less":90}],90:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Literal{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 4px;margin:0 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],86:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Number.less');
 
@@ -4121,13 +4207,15 @@ module.exports = Literal.extend('Code-Number', {
     }
 });
 
-},{"../Literal":84,"./Number.less":87}],87:[function(require,module,exports){
+},{"../Literal":89,"./Number.less":92}],92:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Number{color:purple}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],88:[function(require,module,exports){
-var Literal = require('../Literal');
+},{}],93:[function(require,module,exports){
+var Literal = require('../Literal'),
+    subview = require('subview');
+
 require('./String.less');
 
-module.exports = Literal.extend('String', {
+module.exports = Literal.extend('Code-String', {
     init: function() {
         this.$input = this.$wrapper.find('.string-input');
     },
@@ -4147,18 +4235,17 @@ module.exports = Literal.extend('String', {
     }
 });
 
-},{"../Literal":84,"./String.less":89}],89:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-String{color:#1B1BD3;background:#FDFDAA;display:inline;padding:.3em}.string-input{-moz-user-select:text;-ms-user-select:text;-khtml-user-select:text;-webkit-user-select:text;-o-user-select:text;user-select:text}.string-input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],90:[function(require,module,exports){
-var Literal     = require('../Literal'),
-    Argument    = require('../../Argument');
+},{"../Literal":89,"./String.less":94,"subview":27}],94:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-String{color:#1B1BD3;background:#FDFDAA;display:inline;padding:.2em}.string-input{line-height:1em}.string-input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],95:[function(require,module,exports){
+var Literal = require('../Literal');
 
 require('./Var.less');
 
 module.exports = Literal.extend('Code-Var', {
     isVar: true,
     init: function() {
-        this.$name = $("<input type='text' />");
+        this.$name = $("<span contenteditable='true' class='Code-Var-Input' autocorrect='off' autocapitalize='off' />");
 
         this.$wrapper
             .append(this.$name);
@@ -4166,16 +4253,19 @@ module.exports = Literal.extend('Code-Var', {
     meta: {
         display: "Var"
     },
+    name: function() {
+        return this.$name.val();
+    },
     val: function() {
-        return this.parent('Code-Block').environment.get(this.$name.val());
+        return this.parent('Code-Block').environment.get(this.name());
     },
     focus: function() {
         this.$name.focus();
     }
 });
-},{"../../Argument":63,"../Literal":84,"./Var.less":91}],91:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Var{background:#00f;color:#fff}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],92:[function(require,module,exports){
+},{"../Literal":89,"./Var.less":96}],96:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Var{background:#A6FF94;color:#1F1F1F;padding:0;line-height:1.3em;margin:.15em}.Code-Var-Input{display:inline-block;min-width:10px;padding:0 5px;background:rgba(255,255,255,.5);text-align:center}.Code-Var-Input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],97:[function(require,module,exports){
 module.exports = [
     require('./String/String'),
     require('./Number/Number'),
@@ -4184,7 +4274,7 @@ module.exports = [
     require('./Var/Var')
 ];
 
-},{"./Booleans/False":82,"./Booleans/True":83,"./Number/Number":86,"./String/String":88,"./Var/Var":90}],93:[function(require,module,exports){
+},{"./Booleans/False":87,"./Booleans/True":88,"./Number/Number":91,"./String/String":93,"./Var/Var":95}],98:[function(require,module,exports){
 module.exports = require('./Boolean').extend('AND', {
     template: "AND",
     run: function(first, second) {
@@ -4192,16 +4282,16 @@ module.exports = require('./Boolean').extend('AND', {
     }
 });
 
-},{"./Boolean":94}],94:[function(require,module,exports){
+},{"./Boolean":99}],99:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Boolean.less');
 
 module.exports = Operator.extend('Code-Boolean', {
     precedence: 0
 });
-},{"../Operator":116,"./Boolean.less":95}],95:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Boolean{font-style:italic;color:#BD3BB2;background:rgba(255,231,254,.34);border:1px solid rgba(232,65,255,.15)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],96:[function(require,module,exports){
+},{"../Operator":121,"./Boolean.less":100}],100:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Boolean{color:#FFF;background:#E97FE0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],101:[function(require,module,exports){
 module.exports = require('./Boolean').extend('NOT', {
     isSingleOperator:   true,
     template:           "NOT",
@@ -4218,7 +4308,7 @@ module.exports = require('./Boolean').extend('NOT', {
     }
 });
 
-},{"./Boolean":94}],97:[function(require,module,exports){
+},{"./Boolean":99}],102:[function(require,module,exports){
 module.exports = require('./Boolean').extend('OR', {
     template: "OR",
     run: function(first, second) {
@@ -4226,7 +4316,7 @@ module.exports = require('./Boolean').extend('OR', {
     }
 });
 
-},{"./Boolean":94}],98:[function(require,module,exports){
+},{"./Boolean":99}],103:[function(require,module,exports){
 module.exports = require('./Boolean').extend('XOR', {
     template: "XOR",
     run: function(first, second) {
@@ -4234,7 +4324,7 @@ module.exports = require('./Boolean').extend('XOR', {
     }
 });
 
-},{"./Boolean":94}],99:[function(require,module,exports){
+},{"./Boolean":99}],104:[function(require,module,exports){
 module.exports = [
     require('./AND'),
     require('./OR'),
@@ -4242,16 +4332,16 @@ module.exports = [
     require('./NOT')
 ];
 
-},{"./AND":93,"./NOT":96,"./OR":97,"./XOR":98}],100:[function(require,module,exports){
+},{"./AND":98,"./NOT":101,"./OR":102,"./XOR":103}],105:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Comparator.less');
 
 module.exports = Operator.extend('Code-Comparator', {
     precedence: 1
 });
-},{"../Operator":116,"./Comparator.less":101}],101:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Comparitor{color:#FFF;background:rgba(0,0,0,.75)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],102:[function(require,module,exports){
+},{"../Operator":121,"./Comparator.less":106}],106:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Comparator{color:#FFF;background:rgba(0,0,0,.75)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],107:[function(require,module,exports){
 module.exports = require('./Comparator').extend('Equals', {
     template: "=",
     run: function(first, second) {
@@ -4259,7 +4349,7 @@ module.exports = require('./Comparator').extend('Equals', {
     }
 });
 
-},{"./Comparator":100}],103:[function(require,module,exports){
+},{"./Comparator":105}],108:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThan', {
     template: ">",
     run: function(first, second) {
@@ -4267,7 +4357,7 @@ module.exports = require('./Comparator').extend('GreaterThan', {
     }
 });
 
-},{"./Comparator":100}],104:[function(require,module,exports){
+},{"./Comparator":105}],109:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThanEquals', {
     template: "&ge;",
     run: function(first, second) {
@@ -4275,14 +4365,14 @@ module.exports = require('./Comparator').extend('GreaterThanEquals', {
     }
 });
 
-},{"./Comparator":100}],105:[function(require,module,exports){
+},{"./Comparator":105}],110:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThan', {
     template: "<",
     run: function(first, second) {
         return first < second;
     }
 });
-},{"./Comparator":100}],106:[function(require,module,exports){
+},{"./Comparator":105}],111:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThanEquals', {
     template: "&le;",
     run: function(first, second) {
@@ -4290,7 +4380,7 @@ module.exports = require('./Comparator').extend('LessThanEquals', {
     }
 });
 
-},{"./Comparator":100}],107:[function(require,module,exports){
+},{"./Comparator":105}],112:[function(require,module,exports){
 module.exports = [
     require('./GreaterThan'),
     require('./GreaterThanEquals'),
@@ -4298,7 +4388,7 @@ module.exports = [
     require('./LessThanEquals'),
     require('./LessThan')
 ];
-},{"./Equals":102,"./GreaterThan":103,"./GreaterThanEquals":104,"./LessThan":105,"./LessThanEquals":106}],108:[function(require,module,exports){
+},{"./Equals":107,"./GreaterThan":108,"./GreaterThanEquals":109,"./LessThan":110,"./LessThanEquals":111}],113:[function(require,module,exports){
 module.exports = require('./Math').extend('Divide', {
     template: "&frasl;",
     precedence: 3,
@@ -4307,22 +4397,22 @@ module.exports = require('./Math').extend('Divide', {
     }
 });
 
-},{"./Math":110}],109:[function(require,module,exports){
+},{"./Math":115}],114:[function(require,module,exports){
 module.exports = require('./Math').extend('Exp', {
     template: "^",
     precedence: 4,
     run: Math.pow
 });
-},{"./Math":110}],110:[function(require,module,exports){
+},{"./Math":115}],115:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Math.less');
 
-module.exports = Operator.extend('Math', {
+module.exports = Operator.extend('Code-Math', {
     
 });
-},{"../Operator":116,"./Math.less":111}],111:[function(require,module,exports){
-module.exports=require(39)
-},{}],112:[function(require,module,exports){
+},{"../Operator":121,"./Math.less":116}],116:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Math{color:#FFF;background:#FFA45C}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],117:[function(require,module,exports){
 module.exports = require('./Math').extend('Minus', {
     template: "-",
     precedence: function(stack, i) {
@@ -4360,7 +4450,7 @@ module.exports = require('./Math').extend('Minus', {
     }
 });
 
-},{"./Math":110}],113:[function(require,module,exports){
+},{"./Math":115}],118:[function(require,module,exports){
 module.exports = require('./Math').extend('Multiply', {
     template: "&times;",
     precedence: 3,
@@ -4369,7 +4459,7 @@ module.exports = require('./Math').extend('Multiply', {
     }
 });
 
-},{"./Math":110}],114:[function(require,module,exports){
+},{"./Math":115}],119:[function(require,module,exports){
 module.exports = require('./Math').extend('Plus', {
     template: "+",
     precedence: 2,
@@ -4378,7 +4468,7 @@ module.exports = require('./Math').extend('Plus', {
     }
 });
 
-},{"./Math":110}],115:[function(require,module,exports){
+},{"./Math":115}],120:[function(require,module,exports){
 module.exports = [
     require('./Exp'),
     require('./Divide'),
@@ -4387,7 +4477,7 @@ module.exports = [
     require('./Plus')
 ];
 
-},{"./Divide":108,"./Exp":109,"./Minus":112,"./Multiply":113,"./Plus":114}],116:[function(require,module,exports){
+},{"./Divide":113,"./Exp":114,"./Minus":117,"./Multiply":118,"./Plus":119}],121:[function(require,module,exports){
 require('./Operator.less');
 
 module.exports = require('../Token').extend('Operator', {
@@ -4395,14 +4485,14 @@ module.exports = require('../Token').extend('Operator', {
     tagName: 'span'
 });
 
-},{"../Token":119,"./Operator.less":117}],117:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Operator{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 4px;margin:0 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],118:[function(require,module,exports){
+},{"../Token":124,"./Operator.less":122}],122:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Operator{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 6px;line-height:1.3em;margin:.15em 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],123:[function(require,module,exports){
 module.exports = require('./Comparators/index').concat(
     require('./Math/index'),
     require('./Boolean/index')
 );
-},{"./Boolean/index":99,"./Comparators/index":107,"./Math/index":115}],119:[function(require,module,exports){
+},{"./Boolean/index":104,"./Comparators/index":112,"./Math/index":120}],124:[function(require,module,exports){
 var subview = require('subview'),
     cursor  = require('../cursor');
 
@@ -4424,16 +4514,16 @@ module.exports = subview('Code-Token', {
     }
 });
 
-},{"../Components/error":61,"../cursor":122,"./Token.less":120,"subview":25}],120:[function(require,module,exports){
-module.exports=require(39)
-},{}],121:[function(require,module,exports){
+},{"../Components/error":66,"../cursor":127,"./Token.less":125,"subview":27}],125:[function(require,module,exports){
+module.exports=require(41)
+},{}],126:[function(require,module,exports){
 module.exports = require('./Functions/index').concat(
     require('./Literals/index'),
     require('./Operators/index'),
     require('./Control/index'),
     require('./Assign/Assign')
 );
-},{"./Assign/Assign":65,"./Control/index":73,"./Functions/index":80,"./Literals/index":92,"./Operators/index":118}],122:[function(require,module,exports){
+},{"./Assign/Assign":70,"./Control/index":78,"./Functions/index":85,"./Literals/index":97,"./Operators/index":123}],127:[function(require,module,exports){
 var subview = require('subview');
 
 require('./cursor.less');
@@ -4487,9 +4577,9 @@ var Cursor = subview('Code-Cursor', {
 
 module.exports = Cursor.spawn();
 
-},{"./Components/error":61,"./cursor.less":123,"subview":25}],123:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@-webkit-keyframes flash{0%,100%{opacity:1}50%{opacity:0}}.view-Code-Cursor{position:relative;display:inline-block;width:2px;height:1.1em;margin:-.05em -1px;top:.05em;background:#1279FC;-webkit-animation:flash 1s infinite}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],124:[function(require,module,exports){
+},{"./Components/error":66,"./cursor.less":128,"subview":27}],128:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@-webkit-keyframes flash{0%,100%{opacity:1}50%{opacity:0}}.view-Code-Cursor{position:relative;width:2px;height:1.2em;margin:-.1em -1px;top:.25em;background:#1279FC;-webkit-animation:flash 1s infinite}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],129:[function(require,module,exports){
 var subview = require('subview'),
     prefix  = require('prefix'),
     $       = require('unopinionate').selector;
@@ -4585,9 +4675,9 @@ module.exports = subview('Slider', {
 
 });
 
-},{"./Slider.less":125,"prefix":19,"subview":25,"unopinionate":26}],125:[function(require,module,exports){
+},{"./Slider.less":130,"prefix":21,"subview":27,"unopinionate":28}],130:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Slider{position:relative;width:100%;height:100%;overflow:hidden}.Slider-Slider{position:absolute;left:0;top:0;height:100%;white-space:nowrap}.Slider-Panel{display:inline-block;position:relative;height:100%;vertical-align:top;white-space:normal}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],126:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 var subview     = require('subview'),
     click    = require('onclick');
 
@@ -4595,9 +4685,9 @@ require('./Toolbar.less');
 
 module.exports = subview("Toolbar");
 
-},{"./Toolbar.less":127,"onclick":10,"subview":25}],127:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Toolbar{position:absolute;height:50px;width:100%;background:#F1F0F0;border-bottom:solid 1px #CCC;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding-top:20px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],128:[function(require,module,exports){
+},{"./Toolbar.less":132,"onclick":12,"subview":27}],132:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Toolbar{position:absolute;height:50px;width:100%;background:#F1F0F0;border-bottom:solid 1px #CCC;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding-top:20px}.view-Toolbar button{color:#2A90FF;border:0;background:0 0;font-size:15px;outline:0;padding:0 5px;height:100%}.view-Toolbar button:active{color:#BADBFF}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],133:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4608,7 +4698,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   else { helper = (depth0 && depth0.msg); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
   return escapeExpression(stack1);
   });
-},{"handlebars/runtime":8}],129:[function(require,module,exports){
+},{"handlebars/runtime":10}],134:[function(require,module,exports){
 var subview = require('subview'),
     $       = require('unopinionate').selector;
 
@@ -4707,9 +4797,9 @@ module.exports = subview('Tooltip', {
     },
     $arrow: $("<div class='Tooltip-arrow'>")
 });
-},{"./Tooltip.handlebars":128,"./Tooltip.less":130,"subview":25,"unopinionate":26}],130:[function(require,module,exports){
+},{"./Tooltip.handlebars":133,"./Tooltip.less":135,"subview":27,"unopinionate":28}],135:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Tooltip{position:absolute;max-width:100%;max-height:100%;overflow:auto}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],131:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 var Slider = require('./UI/Slider/Slider');
 
 require('./main.less');
@@ -4747,6 +4837,6 @@ module.exports = Slider.extend('main', {
     defaultPanel: 'editor'
 });
 
-},{"./Editor/Editor":28,"./Files/Files":38,"./Run/Run":44,"./UI/Slider/Slider":124,"./main.less":132}],132:[function(require,module,exports){
+},{"./Editor/Editor":30,"./Files/Files":43,"./Run/Run":49,"./UI/Slider/Slider":129,"./main.less":137}],137:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "body,html{height:100%;width:100%}body{-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none;margin:0;position:absolute;font-family:Avenir,\"Helvetica Neue\",Helvetica,sans-serif}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}]},{},[1])

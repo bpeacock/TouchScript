@@ -1,7 +1,9 @@
-var Literal = require('../Literal');
+var Literal = require('../Literal'),
+    subview = require('subview');
+
 require('./String.less');
 
-module.exports = Literal.extend('String', {
+module.exports = Literal.extend('Code-String', {
     init: function() {
         this.$input = this.$wrapper.find('.string-input');
     },

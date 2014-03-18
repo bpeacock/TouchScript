@@ -16,9 +16,11 @@ module.exports = subview('Code-Field', {
         cursor.appendTo(this.$wrapper);
         return this;
     },
-    run: function() {
+    run: function(callback) {
         var stack = [],
-            token;
+            token,
+            prev,
+            next;
 
         //Get Tokens
         var tokens = this.$wrapper.children();
@@ -26,6 +28,20 @@ module.exports = subview('Code-Field', {
         //Ignore Empty Lines
         if(tokens.length === 0) {
             return;
+        }
+        //Special Case for one async token (for & while loops)
+        else if(tokens.length === 1) {
+            token = subview(tokens[0]);
+
+            if(token.isAsync) {
+                token.run(function(result) {
+                    if(callback) {
+                        callback(result);
+                    }
+                });
+
+                return;
+            }
         }
 
         //Build Stack
@@ -36,7 +52,15 @@ module.exports = subview('Code-Field', {
                 stack.push(token);
             }
             else if(token.isLiteral) {
-                stack.push(token.val());
+                //++ and -- that must operate on the raw variable
+                next = subview(tokens[i + 1]);
+                if(token && token.isVar && next.isVarOperator) {
+                    stack.push(next.run(token));
+                    i++;
+                }
+                else {
+                    stack.push(token.val());
+                }
             }
             else if(token.isToken) {
                 stack.push(token.run());
@@ -66,8 +90,8 @@ module.exports = subview('Code-Field', {
                     }
                     //Standard operators that operate on token before and after
                     else {
-                        var prev = stack[i - 1];
-                            next = stack[i + 1];
+                        prev = stack[i - 1];
+                        next = stack[i + 1];
 
                         if(i === 0) {
                             token.error('No left-side for ' + token.template);
@@ -97,6 +121,10 @@ module.exports = subview('Code-Field', {
             this.error("Syntax Error");
         }
         else {
+            if(callback) {
+                callback(stack[0]);
+            }
+
             return stack[0];
         }
     },

@@ -14,14 +14,15 @@ module.exports = Control.extend('Code-Conditional', {
         this.addCondition('if');
     },
     meta: {
-        display: 'if'
+        display: 'if',
+        name:    'if conditional'
     },
     addCondition: function(type) {
         var condition = {
             block: Block.spawn()
         };
 
-        //Build Condition
+        //Build Condition Objects
         if(type == "else") {
             this.elseCondition = condition;
         }
@@ -34,21 +35,25 @@ module.exports = Control.extend('Code-Conditional', {
         }
         
         //Append to Wrapper
-        var $condition = $("<div class='conditional-block'></div>");
+        var $condition = $("<div class='Code-Conditional-Block'>");
+            $conditionHeader = $("<div class='Code-Control-Header'>");
 
-        $condition.append(
+
+        $conditionHeader.append(
             type == "else" ? "else:" :
             type == "else if" ? "else if " :
             type == "if" ? "if " : ""
         );
         
         if(type != "else") {
-            $condition
+            $conditionHeader
                 .append(condition.arg.$wrapper)
                 .append(" then:");
         }
             
-        $condition.append(condition.block.$wrapper);
+        $condition
+            .append($conditionHeader)
+            .append(condition.block.$wrapper);
 
         this.$wrapper.append($condition);
 

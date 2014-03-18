@@ -96,4 +96,18 @@
     -->
 
     <preference name="DisallowOverscroll" value="true" />
+
+
+    <!-- Permissions -->
+
+    <!-- File -->
+        <!-- Android -->
+        <plugin name="File" value="org.apache.cordova.FileUtils" />
+        <plugin name="FileTransfer" value="org.apache.cordova.FileTransfer" />
+
+        <!-- iOS -->
+        <plugin name="File" value="CDVFile" />
+        <plugin name="FileTransfer" value="CDVFileTransfer" />
+
+    
 </widget>

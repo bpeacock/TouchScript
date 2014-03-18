@@ -38,6 +38,9 @@
 		7E7966E61810823500FA85AD /* icon-small.png in Resources */ = {isa = PBXBuildFile; fileRef = 7E7966DC1810823500FA85AD /* icon-small.png */; };
 		7E7966E71810823500FA85AD /* icon-small@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7E7966DD1810823500FA85AD /* icon-small@2x.png */; };
 		D4A0D8761607E02300AEF8BB /* Default-568h@2x~iphone.png in Resources */ = {isa = PBXBuildFile; fileRef = D4A0D8751607E02300AEF8BB /* Default-568h@2x~iphone.png */; };
+		B584F879B2C948DE86EEEBCA /* CDVFile.m in Sources */ = {isa = PBXBuildFile; fileRef = BBD33CE33032472A9CBA3C84 /* CDVFile.m */; };
+		F5AEF1CF28D34E209FB5FB8E /* CDVLocalFilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7CF84F88E7C949AFA33246DE /* CDVLocalFilesystem.m */; };
+		5BB927A9932F4F5D84ABB042 /* CDVAssetLibraryFilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 6998835908A54F7E93972F5A /* CDVAssetLibraryFilesystem.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -102,6 +105,12 @@
 		EB87FDF31871DA8E0020F90C /* www */ = {isa = PBXFileReference; lastKnownFileType = folder; name = www; path = ../../www; sourceTree = "<group>"; };
 		EB87FDF41871DAF40020F90C /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = ../../config.xml; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = "TouchCode/config.xml"; sourceTree = "<group>"; };
+		BBD33CE33032472A9CBA3C84 /* CDVFile.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVFile.m"; path = "org.apache.cordova.file/CDVFile.m"; sourceTree = "<group>"; fileEncoding = 4; };
+		7CF84F88E7C949AFA33246DE /* CDVLocalFilesystem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVLocalFilesystem.m"; path = "org.apache.cordova.file/CDVLocalFilesystem.m"; sourceTree = "<group>"; fileEncoding = 4; };
+		6998835908A54F7E93972F5A /* CDVAssetLibraryFilesystem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "CDVAssetLibraryFilesystem.m"; path = "org.apache.cordova.file/CDVAssetLibraryFilesystem.m"; sourceTree = "<group>"; fileEncoding = 4; };
+		A1C8466575B54F4A84AE6823 /* CDVFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVFile.h"; path = "org.apache.cordova.file/CDVFile.h"; sourceTree = "<group>"; fileEncoding = 4; };
+		2BBA0B3AB05040AA86E03818 /* CDVLocalFilesystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVLocalFilesystem.h"; path = "org.apache.cordova.file/CDVLocalFilesystem.h"; sourceTree = "<group>"; fileEncoding = 4; };
+		3FE55DA576164FB0A80D03D6 /* CDVAssetLibraryFilesystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CDVAssetLibraryFilesystem.h"; path = "org.apache.cordova.file/CDVAssetLibraryFilesystem.h"; sourceTree = "<group>"; fileEncoding = 4; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -222,6 +231,12 @@
 		307C750510C5A3420062BCA9 /* Plugins */ = {
 			isa = PBXGroup;
 			children = (
+				BBD33CE33032472A9CBA3C84 /* CDVFile.m */,
+				7CF84F88E7C949AFA33246DE /* CDVLocalFilesystem.m */,
+				6998835908A54F7E93972F5A /* CDVAssetLibraryFilesystem.m */,
+				A1C8466575B54F4A84AE6823 /* CDVFile.h */,
+				2BBA0B3AB05040AA86E03818 /* CDVLocalFilesystem.h */,
+				3FE55DA576164FB0A80D03D6 /* CDVAssetLibraryFilesystem.h */,
 			);
 			name = Plugins;
 			path = "TouchCode/Plugins";
@@ -416,6 +431,9 @@
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* AppDelegate.m in Sources */,
 				302D95F114D2391D003F00A1 /* MainViewController.m in Sources */,
+				B584F879B2C948DE86EEEBCA /* CDVFile.m in Sources */,
+				F5AEF1CF28D34E209FB5FB8E /* CDVLocalFilesystem.m in Sources */,
+				5BB927A9932F4F5D84ABB042 /* CDVAssetLibraryFilesystem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -3,5 +3,7 @@ module.exports = [
     require('./Divide'),
     require('./Multiply'),
     require('./Minus'),
-    require('./Plus')
+    require('./Plus'),
+    require('./PlusPlus'),
+    require('./MinusMinus')
 ];

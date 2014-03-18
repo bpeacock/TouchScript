@@ -13,16 +13,21 @@ module.exports = Control.extend('Code-While', {
         this.block = Block.spawn();
 
         //Build the Wrapper
-        this.$wrapper
+        var $header = $("<div class='Code-Control-Header'>")
             .append("while ")
             .append(this.condition.$wrapper)
-            .append(':')
+            .append(':');
+        
+        this.$wrapper
+            .append($header)
             .append(this.block.$wrapper);
     },
     meta: {
-        display: 'while'
+        display: 'while',
+        name:    'while loop'
     },
-    run: function() {
+    isAsync: true,
+    run: function(callback) {
         var self = this,
             code = this.parent('Code');
         
@@ -32,6 +37,7 @@ module.exports = Control.extend('Code-While', {
             }
             else {
                 clearInterval(loop);
+                callback();
             }
         }, 0);
     },

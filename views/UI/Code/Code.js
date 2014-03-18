@@ -1,10 +1,14 @@
-var Block = require('./Components/Block');
+var Block = require('./Components/Block'),
+    Environment = require('./Components/EnvironmentModel');
+
 require('./Code.less');
 
 var noop = function() {};
 
 module.exports = Block.extend('Code', {
     init: function() {
+        this.environment = new Environment();
+        
         this.focus();
     },
     configure: function(config) {

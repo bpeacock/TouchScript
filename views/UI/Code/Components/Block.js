@@ -1,7 +1,6 @@
 var subview     = require('subview'),
     cursor      = require('../cursor'),
-    Line        = require('./Line'),
-    Environment = require('./EnvironmentModel');
+    Line        = require('./Line');
 
 require('./Block.less');
 
@@ -9,7 +8,6 @@ module.exports = subview('Code-Block', {
     init: function() {
         var self = this;
 
-        this.environment = new Environment();
         this.empty();
 
         this.listenDown('Code-Cursor:paste', function() {
@@ -41,11 +39,21 @@ module.exports = subview('Code-Block', {
     run: function() {
         this.beforeRun();
 
-        //Run every line
-        var children = this.$wrapper.children();
-        for(var i=0; i<children.length; i++) {
-            subview(children[i]).run();
-        }
+        //Run every line asyncronously
+        var children = this.$wrapper.children(),
+            i   = 0,
+            len = children.length;
+
+        var loop = function() {
+            subview(children[i]).run(function() {
+                if(i < len) {
+                    i++;
+                    loop();
+                }
+            });
+        };
+
+        loop();
 
         return this;
     }

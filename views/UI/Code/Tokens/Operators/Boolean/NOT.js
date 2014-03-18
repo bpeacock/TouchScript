@@ -1,4 +1,4 @@
-module.exports = require('./Boolean').extend('NOT', {
+module.exports = require('./Boolean').extend('Code-NOT', {
     isSingleOperator:   true,
     template:           "NOT",
     precedence:         5,

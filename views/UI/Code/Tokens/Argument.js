@@ -1,7 +1,7 @@
 var Field = require('../Components/Field');
 require('./Argument.less');
 
-module.exports = Field.extend('Argument', {
+module.exports = Field.extend('Code-Argument', {
     init: function(config) {
         config = config || {};
         

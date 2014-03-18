@@ -1,12 +1,11 @@
-var Literal     = require('../Literal'),
-    Argument    = require('../../Argument');
+var Literal = require('../Literal');
 
 require('./Var.less');
 
 module.exports = Literal.extend('Code-Var', {
     isVar: true,
     init: function() {
-        this.$name = $("<input type='text' />");
+        this.$name = $("<span contenteditable='true' class='Code-Var-Input' autocorrect='off' autocapitalize='off' />");
 
         this.$wrapper
             .append(this.$name);
@@ -14,8 +13,15 @@ module.exports = Literal.extend('Code-Var', {
     meta: {
         display: "Var"
     },
+    name: function() {
+        return this.$name.val();
+    },
+    set: function(val) {
+        this.parent('Code').environment.set(this.name(), val);
+        return val;
+    },
     val: function() {
-        return this.parent('Code-Block').environment.get(this.$name.val());
+        return this.parent('Code').environment.get(this.name());
     },
     focus: function() {
         this.$name.focus();

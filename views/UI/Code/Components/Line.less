@@ -5,7 +5,6 @@
 @numberWidth: 30px;
 .view-Code-Line {
     position: relative;
-    min-height: 1.2em;
     padding-left: @numberWidth;
     .border-box;
 }
@@ -27,37 +26,3 @@
     color: #555;
     .border-box;
 }
-
-/* 
-
-.view-Code {
-    counter-reset: lineNumber;
-}
-
-@numberWidth: 30px;
-.view-Code-Line {
-    margin-left: @numberWidth;
-    .border-box;
-}
-
-.view-Code-Line .view-Code-Line {
-    border-left: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.view-Code-Line:before {
-    font-family: Consolas, monaco, monospace;
-    counter-increment: lineNumber;
-    content: counter(lineNumber);
-
-    position: absolute;
-    width: @numberWidth;
-    left: 0;
-    padding-left: 4px;
-    padding-top: .1em;
-    background: #FAFAFA;
-    border-right: 1px solid #D8D7D7;
-    color: #555;
-    .border-box;
-}
-
-*/
