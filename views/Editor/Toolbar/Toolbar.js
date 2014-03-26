@@ -14,9 +14,9 @@ module.exports = Toolbar.extend('Editor-Toolbar', {
                 terminal.clear();
 
                 setTimeout(function() {
-                    self.trigger('run', function() {
+                    self.trigger('run', [function() {
                         code.run();
-                    });
+                    }]);
                 }, 0);
             },
             '.Editor-Toolbar-open': function() {

@@ -25,8 +25,6 @@ module.exports = subview('Code-Field', {
         //Get Tokens
         var $tokens = this.$wrapper.children('.subview-Code-Token');
 
-        console.log($tokens);
-
         //Ignore Empty Lines
         if($tokens.length === 0) {
             return;
@@ -47,15 +45,15 @@ module.exports = subview('Code-Field', {
         }
 
         //Build Stack
-        for(var i=0; i<tokens.length; i++) {
-            token = subview(tokens[i]);
+        for(var i=0; i<$tokens.length; i++) {
+            token = subview($tokens[i]);
 
             if(token.isOperator) {
                 stack.push(token);
             }
             else if(token.isLiteral) {
                 //++ and -- that must operate on the raw variable
-                next = subview(tokens[i + 1]);
+                next = subview($tokens[i + 1]);
                 if(token && token.isVar && next.isVarOperator) {
                     stack.push(next.run(token));
                     i++;
