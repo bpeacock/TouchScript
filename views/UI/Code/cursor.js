@@ -6,6 +6,7 @@ var Cursor = subview('Code-Cursor', {
     init: function() {
         var self = this;
 
+        //TODO: THIS IS WRONG
         $(document).on('focus', 'input, div', function() {
             self.hide();
         });

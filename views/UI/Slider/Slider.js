@@ -67,6 +67,8 @@ module.exports = subview('Slider', {
             'translate(-' + (i*this.panelWidth) + '%)'
         );
 
+        this.trigger('slide', [i]);
+
         if(callback) {
             setTimeout(callback, this.speed);
         }

@@ -10,12 +10,16 @@ module.exports = Slider.extend('main', {
             open: function() {
                 self.show('files');
             },
-            edit: function() {
+            'edit, new': function() {
                 self.show('editor');
             },
             run: function(callback) {
                 self.show('run', callback);
             }
+        });
+
+        this.bind('slide', function() {
+            $(":focus").blur();
         });
     },
     panels: [
@@ -32,5 +36,5 @@ module.exports = Slider.extend('main', {
             content:    require('./Run/Run')
         }
     ],
-    defaultPanel: 'editor'
+    defaultPanel: 'files'
 });

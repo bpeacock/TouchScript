@@ -9,7 +9,7 @@ module.exports = Toolbar.extend('Files-Toolbar', {
 
         click({
             '.Files-Toolbar-new': function() {
-                self.trigger('edit');
+                self.trigger('new');
             },
             '.Files-Toolbar-delete': function() {
                 

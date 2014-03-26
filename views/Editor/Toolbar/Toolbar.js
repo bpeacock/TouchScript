@@ -23,6 +23,20 @@ module.exports = Toolbar.extend('Editor-Toolbar', {
                 self.trigger('open');
             }
         });
+        
+        this.$name = this.$wrapper.find('.Editor-Toolbar-name');
     },
-    template: require('./Toolbar.handlebars')
+    template: require('./Toolbar.handlebars'),
+    getName: function() {
+        return this.$name.val();
+    },
+    setName: function(name) {
+        this.$name.val(name || '');
+        return this;
+    },
+    focusName: function() {
+        this.$name
+            .val('')
+            .focus();
+    }
 });

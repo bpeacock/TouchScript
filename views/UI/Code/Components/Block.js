@@ -44,17 +44,21 @@ module.exports = subview('Code-Block', {
             i   = 0,
             len = children.length;
 
-        var loop = function() {
+        (function loop() {
             subview(children[i]).run(function() {
                 if(i < len) {
                     i++;
                     loop();
                 }
             });
-        };
-
-        loop();
+        })();
 
         return this;
+    },
+    dump: function() {
+        
+    },
+    load: function() {
+        
     }
 });

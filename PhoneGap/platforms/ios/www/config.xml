@@ -6,7 +6,7 @@
         id        = "com.phonegap.helloworld"
         version   = "1.0.0">
 
-    <name>TouchCode</name>
+    <name>TouchScript</name>
 
     <description>
         Mobile only coding!

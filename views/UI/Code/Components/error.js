@@ -1,15 +1,38 @@
 var Tooltip = require('../../Tooltip/Tooltip'),
-    subview = require('subview');
+    subview = require('subview'),
+    click   = require('onclick');
 
 require("./error.less");
 
-var Err = Tooltip.extend('Code-Error');
+var Err = Tooltip.extend('Code-Error', {
+        init: function() {
+            this.$arrow.addClass('Code-Error-arrow');
+        }
+    }),
+    error;
+
+click.anywhere(function() {
+    if(error) {
+        error.remove();
+    }
+});
 
 module.exports = function(msg) {
-    this.parent('Code').onError();
+    var self = this;
 
-    return Err.spawn({
-        msg:  msg,
-        $el:  this.$wrapper
-    });
+    this.trigger('error', [this, msg]);
+
+    if(error) {
+        error.remove();
+    }
+    
+    //Wait for animation
+    setTimeout(function() {
+        error = Err.spawn({
+            msg:  msg,
+            $el:  self.$wrapper
+        });
+    }, 300);
+    
+    return error;
 };

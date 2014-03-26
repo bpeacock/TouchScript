@@ -1,10 +1,10 @@
 var subview = require('subview'),
-    cursor  = require('../cursor');
+    cursor  = require('../cursor'),
+    click   = require('onclick');
 
 require('./Field.less');
 
-$(document).on('mousedown touchstart', '.view-Code-Field', function(e) {
-    e.stopPropagation();
+click('.view-Code-Field', function(e) {
     subview(this).focus();
 });
 
@@ -23,7 +23,7 @@ module.exports = subview('Code-Field', {
             next;
 
         //Get Tokens
-        var tokens = this.$wrapper.children();
+        var tokens = this.$wrapper.children('.view-Code-Token');
 
         //Ignore Empty Lines
         if(tokens.length === 0) {
