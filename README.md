@@ -1,14 +1,17 @@
-New Library
+TouchScript
 ===========
-
-npm install ../subview
-npm install ../on3/onDrag
-npm install ../helpers.less
 
 Usage
 -----
 
-Installation `npm install`
+Installation:
+```bash
+npm install
+npm install ../on3/onDrag
+sudo npm install -g phonegap
+```
+
+Make sure that you have XCode Installed.
 
 Development
 -----------

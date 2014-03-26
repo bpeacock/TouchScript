@@ -2,7 +2,7 @@ var Slider = require('./UI/Slider/Slider');
 
 require('./main.less');
 
-module.exports = Slider.extend('main', {
+var main = Slider.extend('main', {
     init: function() {
         var self = this;
 
@@ -37,4 +37,10 @@ module.exports = Slider.extend('main', {
         }
     ],
     defaultPanel: 'files'
+}).spawn();
+
+$(function() {
+    main.$wrapper.appendTo('body');
 });
+
+module.exports = main;

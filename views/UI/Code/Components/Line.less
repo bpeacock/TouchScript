@@ -1,15 +1,15 @@
-.view-Code {
+.subview-Code {
     counter-reset: lineNumber;
 }
 
 @numberWidth: 30px;
-.view-Code-Line {
+.subview-Code-Line {
     position: relative;
     padding-left: @numberWidth;
     .border-box;
 }
 
-.view-Code-Line:before {
+.subview-Code-Line:before {
     font-family: Consolas, monaco, monospace;
     counter-increment: lineNumber;
     content: counter(lineNumber);

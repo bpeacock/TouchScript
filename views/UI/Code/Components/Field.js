@@ -4,7 +4,7 @@ var subview = require('subview'),
 
 require('./Field.less');
 
-click('.view-Code-Field', function(e) {
+click('.subview-Code-Field', function(e) {
     subview(this).focus();
 });
 
@@ -23,15 +23,17 @@ module.exports = subview('Code-Field', {
             next;
 
         //Get Tokens
-        var tokens = this.$wrapper.children('.view-Code-Token');
+        var $tokens = this.$wrapper.children('.subview-Code-Token');
+
+        console.log($tokens);
 
         //Ignore Empty Lines
-        if(tokens.length === 0) {
+        if($tokens.length === 0) {
             return;
         }
         //Special Case for one async token (for & while loops)
-        else if(tokens.length === 1) {
-            token = subview(tokens[0]);
+        else if($tokens.length === 1) {
+            token = subview($tokens[0]);
 
             if(token.isAsync) {
                 token.run(function(result) {

@@ -22,7 +22,7 @@ window.app = {
     }
 };
 
-},{"../../../views/main.js":139,"subview":26}],2:[function(require,module,exports){
+},{"../../../views/main.js":138,"subview":25}],2:[function(require,module,exports){
 var _ = require('underscore');
 
 var Files = function(config) {
@@ -123,7 +123,7 @@ Files.prototype = {
 };
 
 module.exports = Files;
-},{"underscore":27}],3:[function(require,module,exports){
+},{"underscore":26}],3:[function(require,module,exports){
 var Files = require('./Files');
 
 module.exports = new Files({
@@ -769,7 +769,7 @@ $(document).bind('mousedown', click._doAnywheres);
 module.exports = click;
 
 
-},{"unopinionate":28}],12:[function(require,module,exports){
+},{"unopinionate":27}],12:[function(require,module,exports){
 (function (global){
 (function(root) {
     var unopinionate = {
@@ -2636,189 +2636,6 @@ function dashedPrefix(key){
 }).call(this);
 
 },{}],23:[function(require,module,exports){
-var log = require("loglevel"),
-    _   = require("underscore");
-
-/*** Cache ***/
-var statePrefix = "state-",
-    stateRegex  = new RegExp("^"+statePrefix, ""),
-    noop = function() {},
-    stateClassFilter = function(c) {
-        return c.match(stateRegex);
-    },
-    getStateClassRegex = function(key) {
-        return new RegExp("^" + statePrefix + key + "-", "");
-    };
-
-/*** The Class ***/
-var State = function(view, defaults) {
-    this.view       = view;
-    this.data       = {};
-    this.bindings   = {};
-    this.listeners  = {};
-
-    this._setDefaults(defaults);
-};
-
-State.prototype = {
-
-    /*** Getters & Setters ***/
-    set: function(key, value) {
-        //Validate
-        if(!key.match(/^[a-zA-Z0-9\.]+$/)) {
-            log.error("State name '" + key + "' is not alphanumeric.");
-        }
-        else {
-            //Set
-            if(this.get(key) != value) {
-                this.data[key] = value;
-                this.trigger(key, value);
-
-                if(value === true || value === false || (typeof value == 'string' && value.match(/^[a-zA-Z0-9]+$/))) {
-
-                    var classes = this.view._getClasses(),
-                        regex   = getStateClassRegex(key),
-                        i       = classes.length,
-                        defined = false,
-                        newState = statePrefix + key + "-" + value;
-
-                    while(i--) {
-                        if(classes[i].match(regex)) {
-                            if(newState == classes[i])  return this; //Don't do anything if there is no change (efficient!!!)
-                            else                        classes[i] = newState;
-
-                            defined = true;
-                            break;
-                        }
-                    }
-
-                    if(!defined) classes.push(newState);
-                    this.view._setClasses(classes);
-                }
-            }
-        }
-
-        return this;
-    },
-    get: function(key) {
-        return this.data[key];
-    },
-    remove: function(key) {
-        if(this.get(key)) {
-            delete this.data[key];
-            this.trigger(key, null);
-
-            var classes = this.view._getClasses(),
-                len     = classes.length,
-                regex   = getStateClassRegex(key);
-
-            classes = _.reject(classes, function(c) {
-                return c.match(regex);
-            });
-
-            if(classes.length != len) this.view.wrapper.className = classes.join(' '); //Don't do anything if there is no change (efficient!!!)
-        }
-
-        return this;
-    },
-
-    /*** Event Bindings ***/
-    bind: function(key, callback) {
-        this.bindings[key] = callback;
-        return callback;
-    },
-    unbind: function(key) {
-        delete this.bindings[key];
-        return this;
-    },
-    trigger: function(key, value) {
-        value = value === undefined ? this.get(key) : value;
-        (this.bindings[key] || noop)(value);
-
-        //Tell all of the listening children
-        var $children = this.view.$wrapper.find('.' + this._listenCssPrefix + this.view.type + '-' + key),
-            i = $children.length;
-
-        while(i--) {
-            var child = $children[i][subview._domPropertyName];
-            child.state._hear(this.view.type, key, value);
-        }
-
-        return this;
-    },
-
-
-    /*** Communicatory Get/Set/Bind ***/
-    //These methods communicate with the closest parent of the given type
-    askParent: function(type, key) {
-        var parent = this.view.$wrapper.closest('.'+this.view._viewCssPrefix + type)[0];
-
-        if(parent)  return parent[subview._domPropertyName].state.get(key);
-        else        return undefined;
-    },
-    tellParent: function(type, key, value) {
-        var parent = this.view.$wrapper.closest('.'+this.view._viewCssPrefix + type)[0];
-
-        if(parent) parent[subview._domPropertyName].state.set(key, value);
-        return this;
-    },
-    _listenCssPrefix: "listen-",
-    listen: function(type, key, callback) {
-        var classes = this.view._getClasses();
-        classes.push(this._listenCssPrefix+type+"-"+key);
-        this.view._setClasses(classes);
-
-        this.listeners[type + '-' + key] = callback;
-        return this;
-    },
-    _hear: function(type, key, value) {
-        (this.listeners[type + '-' + key] || noop)(value);
-        return this;
-    },
-
-
-    /*** Updates State From DOM Classes ***/
-    _setDefaults: function(defaults) {
-        var self = this;
-
-        this.defaults   = defaults || this.defaults;
-        this.data       = {};
-
-        _.each(
-            _.extend(this.defaults, this._getStateClasses()),
-            function(value, key) {
-                self.set(key, value);
-            }
-        );
-
-        return this;
-    },
-
-    /*** State Class methods ***/
-    _getStateClasses: function() {
-        var classes = this.view._getClasses(),
-            i = classes.length,
-            data = {};
-
-        while(i--) {
-            var c = classes[i];
-
-            if(c.match(stateRegex)) {
-                var parts = c.split('-');
-                if(parts.length == 3) {
-                    data[parts[1]] = parts[2];
-                }
-            }
-        }
-
-        return data;
-    }
-};
-
-module.exports = State;
-
-
-},{"loglevel":21,"underscore":22}],24:[function(require,module,exports){
 var _           = require('underscore'),
     log         = require('loglevel');
 
@@ -2831,9 +2648,6 @@ View.prototype = {
     tagName:    "div",
     className:  "",
     template:   "",
-
-    //State data gets mapped to classes
-    state:      {},
 
     //Data goes into the templates and may also be a function that returns an object
     data:       {},
@@ -2874,7 +2688,7 @@ View.prototype = {
             html = this.template;
         }
         else {
-            var data = _.extend(this.state.data, typeof this.data == 'function' ? this.data() : this.data);
+            var data = typeof this.data == 'function' ? this.data() : this.data;
             
             //Define the subview variable
             data.subview = {};
@@ -2920,7 +2734,7 @@ View.prototype = {
     },
     html: function(html) {
         //Remove & clean subviews in the wrapper 
-        this.$wrapper.find('.view').each(function() {
+        this.$wrapper.find('.subview').each(function() {
             subview(this).remove();
         });
 
@@ -2940,7 +2754,6 @@ View.prototype = {
             }
 
             //Clean
-            this.state._setDefaults();
             this.clean();
 
             this.pool._release(this);
@@ -2965,7 +2778,7 @@ View.prototype = {
         _.find(directions, function(jqFunc, dir) {
             var selector = '.listener-'+name+'-'+dir;
             selector = selector + ', ' + selector+'-'+self.type;
-            
+
             //Select $wrappers with the right listener class in the right direction
             var $els = jqFunc ? self.$wrapper[jqFunc](selector) : $(selector);
 
@@ -2975,13 +2788,13 @@ View.prototype = {
 
                 //Check for a subview type specific callback
                 var typedCallback = recipient.listeners[self.type + ":" + name + ":" + dir];
-                if(typedCallback && typedCallback.apply(self, [args]) === false) {
+                if(typedCallback && typedCallback.apply(self, args) === false) {
                     return true; //Breaks if callback returns false
                 }
 
                 //Check for a general event callback
                 var untypedCallback = recipient.listeners[name + ":" + dir];
-                if(untypedCallback && untypedCallback.apply(self, [args]) === false) {
+                if(untypedCallback && untypedCallback.apply(self, args) === false) {
                     return true; //Breaks if callback returns false
                 }
             }
@@ -3031,10 +2844,23 @@ View.prototype = {
         this.listen(event, callback, 'across');
         return this;
     },
+    mirror: function(event) {
+        var self = this;
+
+        this.listen(event, function() {
+            self.trigger(event);
+        });
+
+        return this;
+    },
+    bind: function(event, callback) { //NOT WORKING
+        this.listen(event, callback, 'self');
+        return this;
+    },
 
     /*** Traversing ***/
     parent: function(type) {
-        var $el = this.$wrapper.closest('.' + (type ? this._viewCssPrefix + type : 'view'));
+        var $el = this.$wrapper.closest('.' + (type ? this._viewCssPrefix + type : 'subview'));
         
         if($el && $el.length > 0) {
             return $el[0][subview._domPropertyName];
@@ -3055,7 +2881,7 @@ View.prototype = {
 
     /*** Classes ***/
     _active: false,
-    _viewCssPrefix: 'view-',
+    _viewCssPrefix: 'subview-',
     _getClasses: function() {
         return this.wrapper.className.split(/\s+/);
     },
@@ -3081,7 +2907,7 @@ View.prototype = {
         }
 
         //Add Default View Class
-        classes.push('view');
+        classes.push('subview');
 
         //Add className
         classes = classes.concat(this.className.split(' '));
@@ -3095,9 +2921,8 @@ View.prototype = {
 module.exports = View;
 
 
-},{"loglevel":21,"underscore":22}],25:[function(require,module,exports){
-var State = require("./State"),
-    $     = require("unopinionate").selector;
+},{"loglevel":21,"underscore":22}],24:[function(require,module,exports){
+var $ = require("unopinionate").selector;
 
 var ViewPool = function(View) {
     //Configuration
@@ -3146,9 +2971,6 @@ ViewPool.prototype = {
             view._addDefaultClasses();
             view._active = true;
 
-            //Add view State
-            view.state = new State(view, view.state);
-
             //Render (don't chain since introduces opportunity for user error)
             view.config(config); 
             view.render();
@@ -3174,7 +2996,7 @@ ViewPool.prototype = {
 
 module.exports = ViewPool;
 
-},{"./State":23,"unopinionate":28}],26:[function(require,module,exports){
+},{"unopinionate":27}],25:[function(require,module,exports){
 var _               = require("underscore"),
     log             = require("loglevel"),
     $               = require("unopinionate").selector,
@@ -3184,7 +3006,7 @@ var _               = require("underscore"),
 
 var subview = function(name, protoViewPool, config) {
     var ViewPrototype;
-    
+
     if(!name) {
         return null;
     }
@@ -3245,7 +3067,7 @@ subview._domPropertyName = "subview12345";
 /*** API ***/
 subview.load = function(scope) {
     var $scope = scope ? $(scope) : $('body'),
-        $views = $scope.find("[class^='view-']"),
+        $views = $scope.find("[class^='subview-']"),
         finder = function(c) {
             return c.match(viewTypeRegex);
         };
@@ -3301,15 +3123,8 @@ subview._validateName = function(name) {
 /*** Export ***/
 window.subview = module.exports = subview;
 
-/*** Startup Actions ***/
-$(function() {
-    if(!subview.noInit) {
-        subview.load();
-    }
-});
 
-
-},{"./View":24,"./ViewPool":25,"loglevel":21,"underscore":22,"unopinionate":28}],27:[function(require,module,exports){
+},{"./View":23,"./ViewPool":24,"loglevel":21,"underscore":22,"unopinionate":27}],26:[function(require,module,exports){
 //     Underscore.js 1.6.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -4654,9 +4469,9 @@ $(function() {
   }
 }).call(this);
 
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports=require(12)
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4673,7 +4488,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if(stack1 || stack1 === 0) { buffer += stack1; }
   return buffer;
   });
-},{"handlebars/runtime":10}],30:[function(require,module,exports){
+},{"handlebars/runtime":10}],29:[function(require,module,exports){
 var subview = require('subview'),
     code    = require('./code'),
     toolbar = require('./toolbar'),
@@ -4708,9 +4523,9 @@ module.exports = subview('Editor', {
     }
 });
 
-},{"../../models/programs":3,"./Editor.handlebars":29,"./Editor.less":31,"./Tray/Tray":36,"./code":38,"./toolbar":39,"subview":26}],31:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Toolbar{position:absolute;height:50px;width:100%}.view-Code{position:absolute;bottom:150px;top:50px;width:100%}.view-Tray{position:absolute;height:150px;bottom:0;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],32:[function(require,module,exports){
+},{"../../models/programs":3,"./Editor.handlebars":28,"./Editor.less":30,"./Tray/Tray":35,"./code":37,"./toolbar":38,"subview":25}],30:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Toolbar{position:absolute;height:50px;width:100%}.subview-Code{position:absolute;bottom:150px;top:50px;width:100%}.subview-Tray{position:absolute;height:150px;bottom:0;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],31:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4719,7 +4534,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
   return "<button class='Editor-Toolbar-open'>Open</button>\n\n<input type='text' class='Editor-Toolbar-name' placeholder='Untitled' />\n\n<button class='Editor-Toolbar-run'>Run</button>";
   });
-},{"handlebars/runtime":10}],33:[function(require,module,exports){
+},{"handlebars/runtime":10}],32:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
     click    = require('onclick'),
     code     = require('../code'),
@@ -4763,9 +4578,9 @@ module.exports = Toolbar.extend('Editor-Toolbar', {
     }
 });
 
-},{"../../Run/terminal":57,"../../UI/Toolbar/Toolbar":134,"../code":38,"./Toolbar.handlebars":32,"./Toolbar.less":34,"onclick":11}],34:[function(require,module,exports){
+},{"../../Run/terminal":56,"../../UI/Toolbar/Toolbar":133,"../code":37,"./Toolbar.handlebars":31,"./Toolbar.less":33,"onclick":11}],33:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Editor-Toolbar-run{float:right}.Editor-Toolbar-open{float:left}.Editor-Toolbar-name{position:absolute;left:50%;bottom:0;margin-left:-100px;width:200px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;background:0 0;border:0;text-align:center;font-size:inherit;font-family:inherit;color:inherit}.Editor-Toolbar-name:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],35:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4790,7 +4605,7 @@ function program1(depth0,data) {
   if(stack1 || stack1 === 0) { return stack1; }
   else { return ''; }
   });
-},{"handlebars/runtime":10}],36:[function(require,module,exports){
+},{"handlebars/runtime":10}],35:[function(require,module,exports){
 var subview = require('subview'),
     buttons = require('../../UI/Code/Tokens/index'),
     drag    = require('ondrag'),
@@ -4846,9 +4661,9 @@ module.exports = subview('Tray', {
         };
     }
 });
-},{"../../UI/Code/Tokens/index":129,"../../UI/Code/cursor":130,"./Tray.handlebars":35,"./Tray.less":37,"onclick":11,"ondrag":15,"subview":26}],37:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Tray{background:#F1F0F0;padding:5px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.Tray-Button{display:inline-block;padding:2px 5px;margin:2px 0;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;background:#1075F6;color:#fff;cursor:pointer}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],38:[function(require,module,exports){
+},{"../../UI/Code/Tokens/index":128,"../../UI/Code/cursor":129,"./Tray.handlebars":34,"./Tray.less":36,"onclick":11,"ondrag":15,"subview":25}],36:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Tray{background:#F1F0F0;padding:5px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.Tray-Button{display:inline-block;padding:2px 5px;margin:2px 0;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;background:#1075F6;color:#fff;cursor:pointer}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],37:[function(require,module,exports){
 var code = require('../UI/Code/Code').spawn();
 
 code.configure({
@@ -4860,9 +4675,9 @@ code.configure({
 
 module.exports = code;
 
-},{"../Run/terminal":57,"../UI/Code/Code":58}],39:[function(require,module,exports){
+},{"../Run/terminal":56,"../UI/Code/Code":57}],38:[function(require,module,exports){
 module.exports = require('./Toolbar/Toolbar').spawn();
-},{"./Toolbar/Toolbar":33}],40:[function(require,module,exports){
+},{"./Toolbar/Toolbar":32}],39:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4889,7 +4704,7 @@ function program1(depth0,data) {
   buffer += "\n</ul>";
   return buffer;
   });
-},{"handlebars/runtime":10}],41:[function(require,module,exports){
+},{"handlebars/runtime":10}],40:[function(require,module,exports){
 var subview  = require('subview'),
     click    = require('onclick'),
     _        = require('underscore'),
@@ -4921,9 +4736,9 @@ module.exports = subview('FileSystem', {
     },
     template: require('./FileSystem.handlebars')
 });
-},{"../../../models/programs":3,"./FileSystem.handlebars":40,"./FileSystem.less":42,"onclick":11,"subview":26,"underscore":27}],42:[function(require,module,exports){
+},{"../../../models/programs":3,"./FileSystem.handlebars":39,"./FileSystem.less":41,"onclick":11,"subview":25,"underscore":26}],41:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".FileSystem-list{list-style:none;padding:0;margin:0}.FileSystem-file{line-height:46px;border-bottom:1px solid #F1F1F1;margin-left:15px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],43:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4937,7 +4752,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if(stack1 || stack1 === 0) { buffer += stack1; }
   return buffer;
   });
-},{"handlebars/runtime":10}],44:[function(require,module,exports){
+},{"handlebars/runtime":10}],43:[function(require,module,exports){
 var subview = require('subview');
 
 require('./Files.less');
@@ -4950,9 +4765,9 @@ module.exports = subview('Files', {
     }
 });
 
-},{"./FileSystem/FileSystem":41,"./Files.handlebars":43,"./Files.less":45,"./Toolbar/Toolbar":47,"subview":26}],45:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-FileSystem{position:absolute;top:50px;bottom:0;overflow:auto;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],46:[function(require,module,exports){
+},{"./FileSystem/FileSystem":40,"./Files.handlebars":42,"./Files.less":44,"./Toolbar/Toolbar":46,"subview":25}],44:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-FileSystem{position:absolute;top:50px;bottom:0;overflow:auto;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],45:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4961,7 +4776,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
   return "<button class='Files-Toolbar-new'>New</button>\n\nTouchScript\n\n<button class='Files-Toolbar-delete'>Delete</button>";
   });
-},{"handlebars/runtime":10}],47:[function(require,module,exports){
+},{"handlebars/runtime":10}],46:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
     click    = require('onclick');
 
@@ -4983,9 +4798,9 @@ module.exports = Toolbar.extend('Files-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../UI/Toolbar/Toolbar":134,"./Toolbar.handlebars":46,"./Toolbar.less":48,"onclick":11}],48:[function(require,module,exports){
+},{"../../UI/Toolbar/Toolbar":133,"./Toolbar.handlebars":45,"./Toolbar.less":47,"onclick":11}],47:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Files-Toolbar-delete{float:right}.Files-Toolbar-new{float:left}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],49:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4999,7 +4814,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if(stack1 || stack1 === 0) { buffer += stack1; }
   return buffer;
   });
-},{"handlebars/runtime":10}],50:[function(require,module,exports){
+},{"handlebars/runtime":10}],49:[function(require,module,exports){
 var subview = require('subview');
 
 require('./Run.less');
@@ -5012,9 +4827,9 @@ module.exports = subview('Run', {
     }
 });
 
-},{"./Run.handlebars":49,"./Run.less":51,"./Toolbar/Toolbar":55,"./terminal":57,"subview":26}],51:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Run-Terminal{position:absolute;top:50px;bottom:0;width:100%;padding:10px;font-family:Consolas,monaco,monospace;-webkit-overflow-scrolling:touch;overflow:auto}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],52:[function(require,module,exports){
+},{"./Run.handlebars":48,"./Run.less":50,"./Toolbar/Toolbar":54,"./terminal":56,"subview":25}],50:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Run-Terminal{position:absolute;top:50px;bottom:0;width:100%;padding:10px;font-family:Consolas,monaco,monospace;-webkit-overflow-scrolling:touch;overflow:auto}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],51:[function(require,module,exports){
 var subview = require('subview'),
     key     = require('onkey');
 
@@ -5044,9 +4859,9 @@ module.exports = subview("Run-Terminal", {
     }
 });
 
-},{"./Terminal.less":53,"onkey":18,"subview":26}],53:[function(require,module,exports){
+},{"./Terminal.less":52,"onkey":18,"subview":25}],52:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],54:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -5055,7 +4870,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
   return "<button class='Run-Toolbar-exit'>Exit</button>\n";
   });
-},{"handlebars/runtime":10}],55:[function(require,module,exports){
+},{"handlebars/runtime":10}],54:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
     click    = require('onclick'),
     code     = require('../../Editor/code');
@@ -5076,13 +4891,13 @@ module.exports = Toolbar.extend('Run-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../Editor/code":38,"../../UI/Toolbar/Toolbar":134,"./Toolbar.handlebars":54,"./Toolbar.less":56,"onclick":11}],56:[function(require,module,exports){
+},{"../../Editor/code":37,"../../UI/Toolbar/Toolbar":133,"./Toolbar.handlebars":53,"./Toolbar.less":55,"onclick":11}],55:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Run-Toolbar-exit{float:left}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],57:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 module.exports = require('./Terminal/Terminal').spawn();
 
-},{"./Terminal/Terminal":52}],58:[function(require,module,exports){
-var Block = require('./Components/Block'),
+},{"./Terminal/Terminal":51}],57:[function(require,module,exports){
+var Block       = require('./Components/Block'),
     Environment = require('./Components/EnvironmentModel');
 
 require('./Code.less');
@@ -5117,9 +4932,9 @@ module.exports = Block.extend('Code', {
     onError: noop
 });
 
-},{"./Code.less":59,"./Components/Block":60,"./Components/EnvironmentModel":62}],59:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{overflow:auto;-webkit-overflow-scrolling:touch;font-family:Consolas,monaco,monospace;line-height:1.6em;-webkit-tap-highlight-color:rgba(0,0,0,0);-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none}.view-Code-Line{min-height:1.6em}[contenteditable=true]{-moz-user-select:text;-ms-user-select:text;-khtml-user-select:text;-webkit-user-select:text;-o-user-select:text;user-select:text}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],60:[function(require,module,exports){
+},{"./Code.less":58,"./Components/Block":59,"./Components/EnvironmentModel":61}],58:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code{overflow:auto;-webkit-overflow-scrolling:touch;font-family:Consolas,monaco,monospace;line-height:1.6em;-webkit-tap-highlight-color:rgba(0,0,0,0);-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none}.subview-Code-Line{min-height:1.6em}[contenteditable=true]{-moz-user-select:text;-ms-user-select:text;-khtml-user-select:text;-webkit-user-select:text;-o-user-select:text;user-select:text}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],59:[function(require,module,exports){
 var subview     = require('subview'),
     cursor      = require('../cursor'),
     Line        = require('./Line');
@@ -5185,9 +5000,9 @@ module.exports = subview('Code-Block', {
     }
 });
 
-},{"../cursor":130,"./Block.less":61,"./Line":65,"subview":26}],61:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Block{background:rgba(255,255,255,.36);-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px;color:#111}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],62:[function(require,module,exports){
+},{"../cursor":129,"./Block.less":60,"./Line":64,"subview":25}],60:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Block{background:rgba(255,255,255,.36);-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px;color:#111}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],61:[function(require,module,exports){
 var Environment = function() {
     this.clear();
 };
@@ -5205,14 +5020,14 @@ Environment.prototype = {
 };
 
 module.exports = Environment;
-},{}],63:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 var subview = require('subview'),
     cursor  = require('../cursor'),
     click   = require('onclick');
 
 require('./Field.less');
 
-click('.view-Code-Field', function(e) {
+click('.subview-Code-Field', function(e) {
     subview(this).focus();
 });
 
@@ -5231,15 +5046,17 @@ module.exports = subview('Code-Field', {
             next;
 
         //Get Tokens
-        var tokens = this.$wrapper.children('.view-Code-Token');
+        var $tokens = this.$wrapper.children('.subview-Code-Token');
+
+        console.log($tokens);
 
         //Ignore Empty Lines
-        if(tokens.length === 0) {
+        if($tokens.length === 0) {
             return;
         }
         //Special Case for one async token (for & while loops)
-        else if(tokens.length === 1) {
-            token = subview(tokens[0]);
+        else if($tokens.length === 1) {
+            token = subview($tokens[0]);
 
             if(token.isAsync) {
                 token.run(function(result) {
@@ -5339,22 +5156,22 @@ module.exports = subview('Code-Field', {
     error: require('./error')
 });
 
-},{"../cursor":130,"./Field.less":64,"./error":67,"onclick":11,"subview":26}],64:[function(require,module,exports){
-module.exports=require(53)
-},{}],65:[function(require,module,exports){
+},{"../cursor":129,"./Field.less":63,"./error":66,"onclick":11,"subview":25}],63:[function(require,module,exports){
+module.exports=require(52)
+},{}],64:[function(require,module,exports){
 var Field = require('./Field');
 
 require('./Line.less');
 
 module.exports = Field.extend('Code-Line', {
     isEmpty: function() {
-        return this.$wrapper.children('.view-Code-Token').length === 0;
+        return this.$wrapper.children('.subview-Code-Token').length === 0;
     }
 });
 
-},{"./Field":63,"./Line.less":66}],66:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code{counter-reset:lineNumber}.view-Code-Line{position:relative;padding-left:30px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.view-Code-Line:before{font-family:Consolas,monaco,monospace;counter-increment:lineNumber;content:counter(lineNumber);position:absolute;height:100%;width:34px;left:-4px;padding-left:8px;padding-top:.1em;background:rgba(241,240,240,.53);border-right:1px solid rgba(0,0,0,.15);color:#555;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],67:[function(require,module,exports){
+},{"./Field":62,"./Line.less":65}],65:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code{counter-reset:lineNumber}.subview-Code-Line{position:relative;padding-left:30px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.subview-Code-Line:before{font-family:Consolas,monaco,monospace;counter-increment:lineNumber;content:counter(lineNumber);position:absolute;height:100%;width:34px;left:-4px;padding-left:8px;padding-top:.1em;background:rgba(241,240,240,.53);border-right:1px solid rgba(0,0,0,.15);color:#555;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],66:[function(require,module,exports){
 var Tooltip = require('../../Tooltip/Tooltip'),
     subview = require('subview'),
     click   = require('onclick');
@@ -5394,9 +5211,9 @@ module.exports = function(msg) {
     return error;
 };
 
-},{"../../Tooltip/Tooltip":137,"./error.less":68,"onclick":11,"subview":26}],68:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Error{background:#f70000;color:#fff;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding:2px 6px}.Code-Error-arrow{background:#f70000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],69:[function(require,module,exports){
+},{"../../Tooltip/Tooltip":136,"./error.less":67,"onclick":11,"subview":25}],67:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Error{background:#f70000;color:#fff;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding:2px 6px}.Code-Error-arrow{background:#f70000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],68:[function(require,module,exports){
 var Field = require('../Components/Field');
 require('./Argument.less');
 
@@ -5411,9 +5228,9 @@ module.exports = Field.extend('Code-Argument', {
     tagName: 'span'
 });
 
-},{"../Components/Field":63,"./Argument.less":70}],70:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Argument{background:rgba(255,255,255,.5);padding:.3em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],71:[function(require,module,exports){
+},{"../Components/Field":62,"./Argument.less":69}],69:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Argument{background:rgba(255,255,255,.5);padding:.3em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],70:[function(require,module,exports){
 var Token       = require('../Token'),
     Argument    = require('../Argument'),
     Var         = require('../Literals/Var/Var'),
@@ -5452,9 +5269,9 @@ module.exports = Token.extend('Code-Assign', {
         this.name.focus();
     }
 });
-},{"../Argument":69,"../Literals/Var/Var":96,"../Token":127,"./Assign.less":72,"onkey":18}],72:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Assign{background:#87F08B;display:inline;padding:.3em 0 .3em 2px;margin:0 2px;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],73:[function(require,module,exports){
+},{"../Argument":68,"../Literals/Var/Var":95,"../Token":126,"./Assign.less":71,"onkey":18}],71:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Assign{background:#87F08B;display:inline;padding:.3em 0 .3em 2px;margin:0 2px;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],72:[function(require,module,exports){
 var Control  = require('../Control'),
     Argument = require('../../Argument'),
     Block    = require('../../../Components/Block');
@@ -5537,9 +5354,9 @@ module.exports = Control.extend('Code-Conditional', {
     }
 });
 
-},{"../../../Components/Block":60,"../../Argument":69,"../Control":75,"./Conditional.less":74}],74:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Conditional{background:#BDE2FF;color:#19297C}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],75:[function(require,module,exports){
+},{"../../../Components/Block":59,"../../Argument":68,"../Control":74,"./Conditional.less":73}],73:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Conditional{background:#BDE2FF;color:#19297C}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],74:[function(require,module,exports){
 require('./Control.less');
 
 module.exports = require('../Token').extend('Code-Control', {
@@ -5561,9 +5378,9 @@ module.exports = require('../Token').extend('Code-Control', {
     }
 });
 
-},{"../Token":127,"./Control.less":76}],76:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Control{background:#FFB2B2;color:#880A0A;padding:.05em 0 0;display:inline-block;min-width:100%}.Code-Control-Header{padding:2px 4px}.Code-Control-Header .view-Code-Argument{-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:.3em 2px}.view-Code-Control .view-Code-Block{min-width:240px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],77:[function(require,module,exports){
+},{"../Token":126,"./Control.less":75}],75:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Control{background:#FFB2B2;color:#880A0A;padding:.05em 0 0;display:inline-block;min-width:100%}.Code-Control-Header{padding:2px 4px}.Code-Control-Header .subview-Code-Argument{-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:.3em 2px}.subview-Code-Control .subview-Code-Block{min-width:240px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],76:[function(require,module,exports){
 var Control  = require('../Control'),
     Argument = require('../../Argument'),
     Block    = require('../../../Components/Block');
@@ -5612,14 +5429,14 @@ module.exports = Control.extend('Code-While', {
     }
 });
 
-},{"../../../Components/Block":60,"../../Argument":69,"../Control":75,"./While.less":78}],78:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-While .Code-Control-Header .view-Code-Argument{padding:.2em 2px .3em;top:-.05em;position:relative}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],79:[function(require,module,exports){
+},{"../../../Components/Block":59,"../../Argument":68,"../Control":74,"./While.less":77}],77:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-While .Code-Control-Header .subview-Code-Argument{padding:.2em 2px .3em;top:-.05em;position:relative}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],78:[function(require,module,exports){
 module.exports = [
     require("./Conditional/Conditional"),
     require("./Loop/While")
 ];
-},{"./Conditional/Conditional":73,"./Loop/While":77}],80:[function(require,module,exports){
+},{"./Conditional/Conditional":72,"./Loop/While":76}],79:[function(require,module,exports){
 var Argument = require('../Argument'),
     cursor   = require('../../cursor');
 
@@ -5667,9 +5484,9 @@ module.exports = require('../Token').extend('Function', {
     }
 });
 
-},{"../../cursor":130,"../Argument":69,"../Token":127,"./Function.less":81}],81:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Function{display:inline;background:#D3FFC5;color:#2C2C2C;padding:.3em;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;margin:0 2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],82:[function(require,module,exports){
+},{"../../cursor":129,"../Argument":68,"../Token":126,"./Function.less":80}],80:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Function{display:inline;background:#D3FFC5;color:#2C2C2C;padding:.3em;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;margin:0 2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],81:[function(require,module,exports){
 var Func = require('../Function');
 
 require('./Parentheses.less');
@@ -5687,9 +5504,9 @@ module.exports = Func.extend('Parentheses', {
         }
     ]
 });
-},{"../Function":80,"./Parentheses.less":83}],83:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Parentheses{color:#000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],84:[function(require,module,exports){
+},{"../Function":79,"./Parentheses.less":82}],82:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Parentheses{color:#000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],83:[function(require,module,exports){
 var Func = require('../Function');
 
 require('./Print.less');
@@ -5714,17 +5531,17 @@ module.exports = Func.extend('print', {
     }
 });
 
-},{"../Function":80,"./Print.less":85}],85:[function(require,module,exports){
-module.exports=require(53)
-},{}],86:[function(require,module,exports){
+},{"../Function":79,"./Print.less":84}],84:[function(require,module,exports){
+module.exports=require(52)
+},{}],85:[function(require,module,exports){
 module.exports = [
     require('./Print/Print'),
     require('./Parentheses/Parentheses')
 ];
 
-},{"./Parentheses/Parentheses":82,"./Print/Print":84}],87:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-false,.view-true{color:#FFF;background:#53AEF7;line-height:1.3em;margin:.15em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],88:[function(require,module,exports){
+},{"./Parentheses/Parentheses":81,"./Print/Print":83}],86:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-false,.subview-true{color:#FFF;background:#53AEF7;line-height:1.3em;margin:.15em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],87:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -5739,7 +5556,7 @@ module.exports = Literal.extend('false', {
     }
 });
 
-},{"../Literal":90,"./Boolean.less":87}],89:[function(require,module,exports){
+},{"../Literal":89,"./Boolean.less":86}],88:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -5754,7 +5571,7 @@ module.exports = Literal.extend('true', {
     }
 });
 
-},{"../Literal":90,"./Boolean.less":87}],90:[function(require,module,exports){
+},{"../Literal":89,"./Boolean.less":86}],89:[function(require,module,exports){
 require('./Literal.less');
 
 module.exports = require('../Token').extend('Literal', {
@@ -5762,9 +5579,9 @@ module.exports = require('../Token').extend('Literal', {
     val: function() {}
 });
 
-},{"../Token":127,"./Literal.less":91}],91:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Literal{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 4px;margin:0 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],92:[function(require,module,exports){
+},{"../Token":126,"./Literal.less":90}],90:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Literal{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 4px;margin:0 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],91:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Number.less');
 
@@ -5784,13 +5601,13 @@ module.exports = Literal.extend('Code-Number', {
         this.$input.html('');
     },
     val: function() {
-        return parseFloat(this.$input.val());
+        return parseFloat(this.$input.val(), 10);
     }
 });
 
-},{"../Literal":90,"./Number.less":93}],93:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Number{color:purple}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],94:[function(require,module,exports){
+},{"../Literal":89,"./Number.less":92}],92:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Number{color:purple}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],93:[function(require,module,exports){
 var Literal = require('../Literal'),
     subview = require('subview');
 
@@ -5816,9 +5633,9 @@ module.exports = Literal.extend('Code-String', {
     }
 });
 
-},{"../Literal":90,"./String.less":95,"subview":26}],95:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-String{color:#1B1BD3;background:#FDFDAA;display:inline;padding:.2em}.string-input{line-height:1em}.string-input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],96:[function(require,module,exports){
+},{"../Literal":89,"./String.less":94,"subview":25}],94:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-String{color:#1B1BD3;background:#FDFDAA;display:inline;padding:.2em}.string-input{line-height:1em}.string-input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],95:[function(require,module,exports){
 var Literal = require('../Literal');
 
 require('./Var.less');
@@ -5848,9 +5665,9 @@ module.exports = Literal.extend('Code-Var', {
         this.$name.focus();
     }
 });
-},{"../Literal":90,"./Var.less":97}],97:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Var{background:#A6FF94;color:#1F1F1F;padding:0;line-height:1.3em;margin:.15em}.Code-Var-Input{display:inline-block;min-width:10px;padding:0 5px;background:rgba(255,255,255,.5);text-align:center}.Code-Var-Input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],98:[function(require,module,exports){
+},{"../Literal":89,"./Var.less":96}],96:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Var{background:#A6FF94;color:#1F1F1F;padding:0;line-height:1.3em;margin:.15em}.Code-Var-Input{display:inline-block;min-width:10px;padding:0 5px;background:rgba(255,255,255,.5);text-align:center}.Code-Var-Input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],97:[function(require,module,exports){
 module.exports = [
     require('./String/String'),
     require('./Number/Number'),
@@ -5859,7 +5676,7 @@ module.exports = [
     require('./Var/Var')
 ];
 
-},{"./Booleans/False":88,"./Booleans/True":89,"./Number/Number":92,"./String/String":94,"./Var/Var":96}],99:[function(require,module,exports){
+},{"./Booleans/False":87,"./Booleans/True":88,"./Number/Number":91,"./String/String":93,"./Var/Var":95}],98:[function(require,module,exports){
 module.exports = require('./Boolean').extend('AND', {
     template: "AND",
     run: function(first, second) {
@@ -5867,16 +5684,16 @@ module.exports = require('./Boolean').extend('AND', {
     }
 });
 
-},{"./Boolean":100}],100:[function(require,module,exports){
+},{"./Boolean":99}],99:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Boolean.less');
 
 module.exports = Operator.extend('Code-Boolean', {
     precedence: 0
 });
-},{"../Operator":124,"./Boolean.less":101}],101:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Boolean{color:#FFF;background:#E97FE0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],102:[function(require,module,exports){
+},{"../Operator":123,"./Boolean.less":100}],100:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Boolean{color:#FFF;background:#E97FE0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],101:[function(require,module,exports){
 module.exports = require('./Boolean').extend('Code-NOT', {
     isSingleOperator:   true,
     template:           "NOT",
@@ -5893,7 +5710,7 @@ module.exports = require('./Boolean').extend('Code-NOT', {
     }
 });
 
-},{"./Boolean":100}],103:[function(require,module,exports){
+},{"./Boolean":99}],102:[function(require,module,exports){
 module.exports = require('./Boolean').extend('OR', {
     template: "OR",
     run: function(first, second) {
@@ -5901,7 +5718,7 @@ module.exports = require('./Boolean').extend('OR', {
     }
 });
 
-},{"./Boolean":100}],104:[function(require,module,exports){
+},{"./Boolean":99}],103:[function(require,module,exports){
 module.exports = require('./Boolean').extend('XOR', {
     template: "XOR",
     run: function(first, second) {
@@ -5909,7 +5726,7 @@ module.exports = require('./Boolean').extend('XOR', {
     }
 });
 
-},{"./Boolean":100}],105:[function(require,module,exports){
+},{"./Boolean":99}],104:[function(require,module,exports){
 module.exports = [
     require('./AND'),
     require('./OR'),
@@ -5917,16 +5734,16 @@ module.exports = [
     require('./NOT')
 ];
 
-},{"./AND":99,"./NOT":102,"./OR":103,"./XOR":104}],106:[function(require,module,exports){
+},{"./AND":98,"./NOT":101,"./OR":102,"./XOR":103}],105:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Comparator.less');
 
 module.exports = Operator.extend('Code-Comparator', {
     precedence: 1
 });
-},{"../Operator":124,"./Comparator.less":107}],107:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Comparator{color:#FFF;background:rgba(0,0,0,.75)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],108:[function(require,module,exports){
+},{"../Operator":123,"./Comparator.less":106}],106:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Comparator{color:#FFF;background:rgba(0,0,0,.75)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],107:[function(require,module,exports){
 module.exports = require('./Comparator').extend('Equals', {
     template: "=",
     run: function(first, second) {
@@ -5934,7 +5751,7 @@ module.exports = require('./Comparator').extend('Equals', {
     }
 });
 
-},{"./Comparator":106}],109:[function(require,module,exports){
+},{"./Comparator":105}],108:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThan', {
     template: ">",
     run: function(first, second) {
@@ -5942,7 +5759,7 @@ module.exports = require('./Comparator').extend('GreaterThan', {
     }
 });
 
-},{"./Comparator":106}],110:[function(require,module,exports){
+},{"./Comparator":105}],109:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThanEquals', {
     template: "&ge;",
     run: function(first, second) {
@@ -5950,14 +5767,14 @@ module.exports = require('./Comparator').extend('GreaterThanEquals', {
     }
 });
 
-},{"./Comparator":106}],111:[function(require,module,exports){
+},{"./Comparator":105}],110:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThan', {
     template: "<",
     run: function(first, second) {
         return first < second;
     }
 });
-},{"./Comparator":106}],112:[function(require,module,exports){
+},{"./Comparator":105}],111:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThanEquals', {
     template: "&le;",
     run: function(first, second) {
@@ -5965,7 +5782,7 @@ module.exports = require('./Comparator').extend('LessThanEquals', {
     }
 });
 
-},{"./Comparator":106}],113:[function(require,module,exports){
+},{"./Comparator":105}],112:[function(require,module,exports){
 module.exports = [
     require('./GreaterThan'),
     require('./GreaterThanEquals'),
@@ -5973,7 +5790,7 @@ module.exports = [
     require('./LessThanEquals'),
     require('./LessThan')
 ];
-},{"./Equals":108,"./GreaterThan":109,"./GreaterThanEquals":110,"./LessThan":111,"./LessThanEquals":112}],114:[function(require,module,exports){
+},{"./Equals":107,"./GreaterThan":108,"./GreaterThanEquals":109,"./LessThan":110,"./LessThanEquals":111}],113:[function(require,module,exports){
 module.exports = require('./Math').extend('Divide', {
     template: "&frasl;",
     precedence: 3,
@@ -5982,22 +5799,22 @@ module.exports = require('./Math').extend('Divide', {
     }
 });
 
-},{"./Math":116}],115:[function(require,module,exports){
+},{"./Math":115}],114:[function(require,module,exports){
 module.exports = require('./Math').extend('Exp', {
     template: "^",
     precedence: 4,
     run: Math.pow
 });
-},{"./Math":116}],116:[function(require,module,exports){
+},{"./Math":115}],115:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Math.less');
 
 module.exports = Operator.extend('Code-Math', {
     
 });
-},{"../Operator":124,"./Math.less":117}],117:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Code-Math{color:#FFF;background:#FFA45C}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],118:[function(require,module,exports){
+},{"../Operator":123,"./Math.less":116}],116:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Math{color:#FFF;background:#FFA45C}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],117:[function(require,module,exports){
 module.exports = require('./Math').extend('Minus', {
     template: "-",
     precedence: function(stack, i) {
@@ -6035,7 +5852,7 @@ module.exports = require('./Math').extend('Minus', {
     }
 });
 
-},{"./Math":116}],119:[function(require,module,exports){
+},{"./Math":115}],118:[function(require,module,exports){
 var _ = require('underscore');
 
 module.exports = require('./Math').extend('Code-MinusMinus', {
@@ -6061,7 +5878,7 @@ module.exports = require('./Math').extend('Code-MinusMinus', {
     }
 });
 
-},{"./Math":116,"underscore":27}],120:[function(require,module,exports){
+},{"./Math":115,"underscore":26}],119:[function(require,module,exports){
 module.exports = require('./Math').extend('Multiply', {
     template: "&times;",
     precedence: 3,
@@ -6070,7 +5887,7 @@ module.exports = require('./Math').extend('Multiply', {
     }
 });
 
-},{"./Math":116}],121:[function(require,module,exports){
+},{"./Math":115}],120:[function(require,module,exports){
 module.exports = require('./Math').extend('Plus', {
     template: "+",
     precedence: 2,
@@ -6079,7 +5896,7 @@ module.exports = require('./Math').extend('Plus', {
     }
 });
 
-},{"./Math":116}],122:[function(require,module,exports){
+},{"./Math":115}],121:[function(require,module,exports){
 var _ = require('underscore');
 
 module.exports = require('./Math').extend('Code-PlusPlus', {
@@ -6105,7 +5922,7 @@ module.exports = require('./Math').extend('Code-PlusPlus', {
     }
 });
 
-},{"./Math":116,"underscore":27}],123:[function(require,module,exports){
+},{"./Math":115,"underscore":26}],122:[function(require,module,exports){
 module.exports = [
     require('./Exp'),
     require('./Divide'),
@@ -6116,7 +5933,7 @@ module.exports = [
     require('./MinusMinus')
 ];
 
-},{"./Divide":114,"./Exp":115,"./Minus":118,"./MinusMinus":119,"./Multiply":120,"./Plus":121,"./PlusPlus":122}],124:[function(require,module,exports){
+},{"./Divide":113,"./Exp":114,"./Minus":117,"./MinusMinus":118,"./Multiply":119,"./Plus":120,"./PlusPlus":121}],123:[function(require,module,exports){
 require('./Operator.less');
 
 module.exports = require('../Token').extend('Operator', {
@@ -6124,14 +5941,14 @@ module.exports = require('../Token').extend('Operator', {
     tagName: 'span'
 });
 
-},{"../Token":127,"./Operator.less":125}],125:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Operator{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 6px;line-height:1.3em;margin:.15em 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],126:[function(require,module,exports){
+},{"../Token":126,"./Operator.less":124}],124:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Operator{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 6px;line-height:1.3em;margin:.15em 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],125:[function(require,module,exports){
 module.exports = require('./Comparators/index').concat(
     require('./Math/index'),
     require('./Boolean/index')
 );
-},{"./Boolean/index":105,"./Comparators/index":113,"./Math/index":123}],127:[function(require,module,exports){
+},{"./Boolean/index":104,"./Comparators/index":112,"./Math/index":122}],126:[function(require,module,exports){
 var subview = require('subview'),
     cursor  = require('../cursor');
 
@@ -6153,16 +5970,16 @@ module.exports = subview('Code-Token', {
     }
 });
 
-},{"../Components/error":67,"../cursor":130,"./Token.less":128,"subview":26}],128:[function(require,module,exports){
-module.exports=require(53)
-},{}],129:[function(require,module,exports){
+},{"../Components/error":66,"../cursor":129,"./Token.less":127,"subview":25}],127:[function(require,module,exports){
+module.exports=require(52)
+},{}],128:[function(require,module,exports){
 module.exports = require('./Functions/index').concat(
     require('./Literals/index'),
     require('./Operators/index'),
     require('./Control/index'),
     require('./Assign/Assign')
 );
-},{"./Assign/Assign":71,"./Control/index":79,"./Functions/index":86,"./Literals/index":98,"./Operators/index":126}],130:[function(require,module,exports){
+},{"./Assign/Assign":70,"./Control/index":78,"./Functions/index":85,"./Literals/index":97,"./Operators/index":125}],129:[function(require,module,exports){
 var subview = require('subview');
 
 require('./cursor.less');
@@ -6171,6 +5988,7 @@ var Cursor = subview('Code-Cursor', {
     init: function() {
         var self = this;
 
+        //TODO: THIS IS WRONG
         $(document).on('focus', 'input, div', function() {
             self.hide();
         });
@@ -6216,9 +6034,9 @@ var Cursor = subview('Code-Cursor', {
 
 module.exports = Cursor.spawn();
 
-},{"./Components/error":67,"./cursor.less":131,"subview":26}],131:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@-webkit-keyframes flash{0%,100%{opacity:1}50%{opacity:0}}.view-Code-Cursor{position:relative;width:2px;height:1.2em;margin:-.1em -1px;top:.25em;background:#1279FC;-webkit-animation:flash 1s infinite}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],132:[function(require,module,exports){
+},{"./Components/error":66,"./cursor.less":130,"subview":25}],130:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@-webkit-keyframes flash{0%,100%{opacity:1}50%{opacity:0}}.subview-Code-Cursor{position:relative;width:2px;height:1.2em;margin:-.1em -1px;top:.25em;background:#1279FC;-webkit-animation:flash 1s infinite}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],131:[function(require,module,exports){
 var subview = require('subview'),
     prefix  = require('prefix'),
     $       = require('unopinionate').selector;
@@ -6316,9 +6134,9 @@ module.exports = subview('Slider', {
 
 });
 
-},{"./Slider.less":133,"prefix":20,"subview":26,"unopinionate":28}],133:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Slider{position:relative;width:100%;height:100%;overflow:hidden}.Slider-Slider{position:absolute;left:0;top:0;height:100%;white-space:nowrap}.Slider-Panel{display:inline-block;position:relative;height:100%;vertical-align:top;white-space:normal}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],134:[function(require,module,exports){
+},{"./Slider.less":132,"prefix":20,"subview":25,"unopinionate":27}],132:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Slider{position:relative;width:100%;height:100%;overflow:hidden}.Slider-Slider{position:absolute;left:0;top:0;height:100%;white-space:nowrap}.Slider-Panel{display:inline-block;position:relative;height:100%;vertical-align:top;white-space:normal}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],133:[function(require,module,exports){
 var subview     = require('subview'),
     click    = require('onclick');
 
@@ -6326,9 +6144,9 @@ require('./Toolbar.less');
 
 module.exports = subview("Toolbar");
 
-},{"./Toolbar.less":135,"onclick":11,"subview":26}],135:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Toolbar{position:absolute;height:50px;width:100%;background:#F1F0F0;border-bottom:solid 1px #CCC;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding-top:20px;text-align:center;color:#414141}.view-Toolbar button{color:#2A90FF;border:0;background:0 0;font-size:15px;outline:0;padding:0 5px;height:100%}.view-Toolbar button:active{color:#BADBFF}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],136:[function(require,module,exports){
+},{"./Toolbar.less":134,"onclick":11,"subview":25}],134:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Toolbar{position:absolute;height:50px;width:100%;background:#F1F0F0;border-bottom:solid 1px #CCC;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding-top:20px;text-align:center;color:#414141}.subview-Toolbar button{color:#2A90FF;border:0;background:0 0;font-size:15px;outline:0;padding:0 5px;height:100%}.subview-Toolbar button:active{color:#BADBFF}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],135:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -6339,7 +6157,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   else { helper = (depth0 && depth0.msg); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
   return escapeExpression(stack1);
   });
-},{"handlebars/runtime":10}],137:[function(require,module,exports){
+},{"handlebars/runtime":10}],136:[function(require,module,exports){
 var subview = require('subview'),
     $       = require('unopinionate').selector;
 
@@ -6443,14 +6261,14 @@ module.exports = subview('Tooltip', {
     },
     $arrow: $("<div class='Tooltip-arrow'>")
 });
-},{"./Tooltip.handlebars":136,"./Tooltip.less":138,"subview":26,"unopinionate":28}],138:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".view-Tooltip{position:absolute;max-width:100%;max-height:100%;overflow:auto;z-index:1001}.Tooltip-arrow{position:absolute;-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-o-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg);width:12px;height:12px;z-index:1000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],139:[function(require,module,exports){
+},{"./Tooltip.handlebars":135,"./Tooltip.less":137,"subview":25,"unopinionate":27}],137:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Tooltip{position:absolute;max-width:100%;max-height:100%;overflow:auto;z-index:1001}.Tooltip-arrow{position:absolute;-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-o-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg);width:12px;height:12px;z-index:1000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],138:[function(require,module,exports){
 var Slider = require('./UI/Slider/Slider');
 
 require('./main.less');
 
-module.exports = Slider.extend('main', {
+var main = Slider.extend('main', {
     init: function() {
         var self = this;
 
@@ -6485,8 +6303,14 @@ module.exports = Slider.extend('main', {
         }
     ],
     defaultPanel: 'files'
+}).spawn();
+
+$(function() {
+    main.$wrapper.appendTo('body');
 });
 
-},{"./Editor/Editor":30,"./Files/Files":44,"./Run/Run":50,"./UI/Slider/Slider":132,"./main.less":140}],140:[function(require,module,exports){
+module.exports = main;
+
+},{"./Editor/Editor":29,"./Files/Files":43,"./Run/Run":49,"./UI/Slider/Slider":131,"./main.less":139}],139:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "body,html{height:100%;width:100%}body{-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none;margin:0;position:absolute;font-family:Avenir,\"Helvetica Neue\",Helvetica,sans-serif;-webkit-tap-highlight-color:rgba(0,0,0,0)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}]},{},[1])

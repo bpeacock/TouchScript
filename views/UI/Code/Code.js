@@ -1,4 +1,4 @@
-var Block = require('./Components/Block'),
+var Block       = require('./Components/Block'),
     Environment = require('./Components/EnvironmentModel');
 
 require('./Code.less');
