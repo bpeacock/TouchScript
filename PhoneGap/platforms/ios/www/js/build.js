@@ -17,7 +17,7 @@ window.app = {
     // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function() {
         document.addEventListener('deviceready', function() {
-            subview.load();
+            subview.init();
         }, false);
     }
 };
@@ -3120,9 +3120,23 @@ subview._validateName = function(name) {
     return true;
 };
 
+subview.init = function() {
+    var Main = subview.lookup('main');
+
+    if(Main) {
+        subview.main = Main.spawn();
+        subview.main.$wrapper.appendTo('body');
+    }
+};
+
 /*** Export ***/
 window.subview = module.exports = subview;
 
+$(function() {
+    if(!subview.noInit) {
+        subview.init();
+    }
+});
 
 },{"./View":23,"./ViewPool":24,"loglevel":21,"underscore":22,"unopinionate":27}],26:[function(require,module,exports){
 //     Underscore.js 1.6.0
@@ -4551,9 +4565,9 @@ module.exports = Toolbar.extend('Editor-Toolbar', {
                 terminal.clear();
 
                 setTimeout(function() {
-                    self.trigger('run', function() {
+                    self.trigger('run', [function() {
                         code.run();
-                    });
+                    }]);
                 }, 0);
             },
             '.Editor-Toolbar-open': function() {
@@ -5048,8 +5062,6 @@ module.exports = subview('Code-Field', {
         //Get Tokens
         var $tokens = this.$wrapper.children('.subview-Code-Token');
 
-        console.log($tokens);
-
         //Ignore Empty Lines
         if($tokens.length === 0) {
             return;
@@ -5070,15 +5082,15 @@ module.exports = subview('Code-Field', {
         }
 
         //Build Stack
-        for(var i=0; i<tokens.length; i++) {
-            token = subview(tokens[i]);
+        for(var i=0; i<$tokens.length; i++) {
+            token = subview($tokens[i]);
 
             if(token.isOperator) {
                 stack.push(token);
             }
             else if(token.isLiteral) {
                 //++ and -- that must operate on the raw variable
-                next = subview(tokens[i + 1]);
+                next = subview($tokens[i + 1]);
                 if(token && token.isVar && next.isVarOperator) {
                     stack.push(next.run(token));
                     i++;
@@ -6268,7 +6280,7 @@ var Slider = require('./UI/Slider/Slider');
 
 require('./main.less');
 
-var main = Slider.extend('main', {
+module.exports = Slider.extend('main', {
     init: function() {
         var self = this;
 
@@ -6277,6 +6289,7 @@ var main = Slider.extend('main', {
                 self.show('files');
             },
             'edit, new': function() {
+                console.log('new');
                 self.show('editor');
             },
             run: function(callback) {
@@ -6303,13 +6316,7 @@ var main = Slider.extend('main', {
         }
     ],
     defaultPanel: 'files'
-}).spawn();
-
-$(function() {
-    main.$wrapper.appendTo('body');
 });
-
-module.exports = main;
 
 },{"./Editor/Editor":29,"./Files/Files":43,"./Run/Run":49,"./UI/Slider/Slider":131,"./main.less":139}],139:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "body,html{height:100%;width:100%}body{-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none;margin:0;position:absolute;font-family:Avenir,\"Helvetica Neue\",Helvetica,sans-serif;-webkit-tap-highlight-color:rgba(0,0,0,0)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())

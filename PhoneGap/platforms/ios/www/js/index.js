@@ -16,7 +16,7 @@ window.app = {
     // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function() {
         document.addEventListener('deviceready', function() {
-            subview.load();
+            subview.init();
         }, false);
     }
 };

@@ -22,7 +22,7 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-            files: ["views/**/*", "models/**/*", "examples/example.js"],
+            files: ["views/**/*", "models/**/*", "examples/example.js", "node_modules/subview/**/*"],
             tasks: ['browserify:test']
         },
         jshint: {
