@@ -43,5 +43,16 @@ module.exports = Control.extend('Code-While', {
     },
     focus: function() {
         this.condition.focus();
+    },
+    dump: function() {
+        return {
+            type:       this.type,
+            condition:  this.condition.dump(),
+            block:      this.block.dump()
+        };
+    },
+    load: function(content) {
+        this.condition.load(content.condition);
+        this.block.load(content.block);
     }
 });

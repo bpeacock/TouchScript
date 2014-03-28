@@ -1,5 +1,6 @@
 var Argument = require('../Argument'),
-    cursor   = require('../../cursor');
+    cursor   = require('../../cursor'),
+    _        = require('underscore');
 
 require('./Function.less');
 
@@ -42,5 +43,19 @@ module.exports = require('../Token').extend('Function', {
         else {
             this.$wrapper.after(cursor);
         }
+    },
+    dump: function() {
+        return {
+            type: this.type,
+            arguments: _.map(this.argumentInstances, function(arg) {
+                return arg.dump();
+            })
+        };
+    },
+    load: function(content) {
+        var self = this;
+        _.each(content.arguments, function(arg, i) {
+            self.argumentInstances[i].load(arg);
+        });
     }
 });

@@ -22,15 +22,23 @@ window.app = {
     }
 };
 
-},{"../../../views/main.js":138,"subview":25}],2:[function(require,module,exports){
-var _ = require('underscore');
+},{"../../../views/main.js":141,"subview":28}],2:[function(require,module,exports){
+var _   = require('underscore'),
+    log = require('loglevel');
 
 var Files = function(config) {
     var self = this;
     config = config || {};
 
     /*** Configure ***/
-    this.extension = config.extension || null;
+    this.extension = "." + config.extension || "";
+
+    var pass = function(value) {
+        return value;
+    };
+
+    this.encode = config.encode || pass;
+    this.decode = config.decode || pass;
 
     /*** Initialize ***/
     setTimeout(function() {
@@ -45,38 +53,45 @@ Files.prototype = {
 
     /*** Public Methods ***/
     init: function() {
-        var self = this;
+        var self = this,
+            requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
 
-        window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+        if(requestFileSystem) {
+            if(window.navigator.webkitPersistentStorage) {
+                window.navigator.webkitPersistentStorage.requestQuota(1024*1024*5, createFileSytem, log.error);
+            }
+            else {
+                createFileSytem();
+            }
+        }
+        else {
+            log.warn("No local file system");
+        }
 
-        if(window.requestFileSystem) {
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+        function createFileSytem(grantedBytes) {
+            var type = window.LocalFileSystem ? window.LocalFileSystem.PERSISTENT : window.PERSISTENT,
+                size = grantedBytes || 0;
+
+            requestFileSystem(type, size, function(fs) {
                 self.root = fs.root;
-                console.log(fs);
                 self.directory = fs.root.createReader();
 
                 self.sync(function() {
                     self._fireReady();
                 });
-            }, console.error);
-        }
-        else {
-            console.warn("No local file system");
+            }, log.error);
         }
     },
     sync: function(callback) {
         var self  = this,
-            regex = new RegExp("[a-z_ -]+\\."+this.extension, "i");
+            regex = new RegExp("[a-z_ -]+\\"+this.extension, "i");
 
         this.directory.readEntries(function(data) {
-            console.log(data);
             self.data = _.filter(data, function(file) {
-                console.log(file.name);
-                console.log(regex);
                 return file.name.match(regex);
             });
             callback();
-        }, console.error);
+        }, log.error);
 
         return this;
     },
@@ -84,32 +99,36 @@ Files.prototype = {
         return this.data || [];
     },
     get: function(name, callback) {
-        this.root.getFile(name, {}, function(fileEntry) {
+        var self = this;
+
+        this.root.getFile(name + this.extension, {}, function(fileEntry) {
             fileEntry.file(function(file) {
                 var reader = new FileReader();
 
                 reader.onloadend = function(e) {
-                    callback(JSON.parse(this.result));
+                    callback(self.decode(this.result));
                 };
 
                 reader.readAsText(file);
-            }, console.error);
-        }, console.error);
+            }, log.error);
+        }, log.error);
     },
     set: function(name, content) {
         var self = this;
-        name = name + (this.extension ? "." + this.extension : "");
+        name = name + this.extension;
 
         this.root.getFile(name, {create: true}, function(file) {
             file.createWriter(function(fileWriter) {
                 fileWriter.onerror = function(e) {
-                    console.error('Write failed: ' + e.toString());
+                    log.error('Write failed: ' + e.toString());
                 };
 
-                fileWriter.write(new Blob([JSON.stringify(content)], {type: 'text/touchscript'}));
+                fileWriter.write(new Blob([self.encode(content)], {
+                    type: 'text/touchscript'
+                }));
 
-            }, console.error);
-        }, console.error);
+            }, log.error);
+        }, log.error);
     },
     ready: function(callback) {
         this._readyFuncs.push(callback);
@@ -123,11 +142,15 @@ Files.prototype = {
 };
 
 module.exports = Files;
-},{"underscore":26}],3:[function(require,module,exports){
+},{"loglevel":11,"underscore":29}],3:[function(require,module,exports){
 var Files = require('./Files');
 
 module.exports = new Files({
-    extension: "ts"
+    extension: "ts",
+    encode: JSON.stringify,
+    decode: function(json) {
+        return JSON.parse(json);
+    }
 });
 },{"./Files":2}],4:[function(require,module,exports){
 "use strict";
@@ -605,6 +628,212 @@ exports.isEmpty = isEmpty;
 module.exports = require('./dist/cjs/handlebars.runtime');
 
 },{"./dist/cjs/handlebars.runtime":4}],11:[function(require,module,exports){
+/*
+ * loglevel - https://github.com/pimterry/loglevel
+ *
+ * Copyright (c) 2013 Tim Perry
+ * Licensed under the MIT license.
+ */
+
+;(function (undefined) {
+    var undefinedType = "undefined";
+
+    (function (name, definition) {
+        if (typeof module !== 'undefined') {
+            module.exports = definition();
+        } else if (typeof define === 'function' && typeof define.amd === 'object') {
+            define(definition);
+        } else {
+            this[name] = definition();
+        }
+    }('log', function () {
+        var self = {};
+        var noop = function() {};
+
+        function realMethod(methodName) {
+            if (typeof console === undefinedType) {
+                return noop;
+            } else if (console[methodName] === undefined) {
+                if (console.log !== undefined) {
+                    return boundToConsole(console, 'log');
+                } else {
+                    return noop;
+                }
+            } else {
+                return boundToConsole(console, methodName);
+            }
+        }
+
+        function boundToConsole(console, methodName) {
+            var method = console[methodName];
+            if (method.bind === undefined) {
+                if (Function.prototype.bind === undefined) {
+                    return functionBindingWrapper(method, console);
+                } else {
+                    try {
+                        return Function.prototype.bind.call(console[methodName], console);
+                    } catch (e) {
+                        // In IE8 + Modernizr, the bind shim will reject the above, so we fall back to wrapping
+                        return functionBindingWrapper(method, console);
+                    }
+                }
+            } else {
+                return console[methodName].bind(console);
+            }
+        }
+
+        function functionBindingWrapper(f, context) {
+            return function() {
+                Function.prototype.apply.apply(f, [context, arguments]);
+            };
+        }
+
+        var logMethods = [
+            "trace",
+            "debug",
+            "info",
+            "warn",
+            "error"
+        ];
+
+        function replaceLoggingMethods(methodFactory) {
+            for (var ii = 0; ii < logMethods.length; ii++) {
+                self[logMethods[ii]] = methodFactory(logMethods[ii]);
+            }
+        }
+
+        function cookiesAvailable() {
+            return (typeof window !== undefinedType &&
+                    window.document !== undefined &&
+                    window.document.cookie !== undefined);
+        }
+
+        function localStorageAvailable() {
+            try {
+                return (typeof window !== undefinedType &&
+                        window.localStorage !== undefined);
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function persistLevelIfPossible(levelNum) {
+            var localStorageFail = false,
+                levelName;
+
+            for (var key in self.levels) {
+                if (self.levels.hasOwnProperty(key) && self.levels[key] === levelNum) {
+                    levelName = key;
+                    break;
+                }
+            }
+
+            if (localStorageAvailable()) {
+                /*
+                 * Setting localStorage can create a DOM 22 Exception if running in Private mode
+                 * in Safari, so even if it is available we need to catch any errors when trying
+                 * to write to it
+                 */
+                try {
+                    window.localStorage['loglevel'] = levelName;
+                } catch (e) {
+                    localStorageFail = true;
+                }
+            } else {
+                localStorageFail = true;
+            }
+
+            if (localStorageFail && cookiesAvailable()) {
+                window.document.cookie = "loglevel=" + levelName + ";";
+            }
+        }
+
+        var cookieRegex = /loglevel=([^;]+)/;
+
+        function loadPersistedLevel() {
+            var storedLevel;
+
+            if (localStorageAvailable()) {
+                storedLevel = window.localStorage['loglevel'];
+            }
+
+            if (storedLevel === undefined && cookiesAvailable()) {
+                var cookieMatch = cookieRegex.exec(window.document.cookie) || [];
+                storedLevel = cookieMatch[1];
+            }
+            
+            if (self.levels[storedLevel] === undefined) {
+                storedLevel = "WARN";
+            }
+
+            self.setLevel(self.levels[storedLevel]);
+        }
+
+        /*
+         *
+         * Public API
+         *
+         */
+
+        self.levels = { "TRACE": 0, "DEBUG": 1, "INFO": 2, "WARN": 3,
+            "ERROR": 4, "SILENT": 5};
+
+        self.setLevel = function (level) {
+            if (typeof level === "number" && level >= 0 && level <= self.levels.SILENT) {
+                persistLevelIfPossible(level);
+
+                if (level === self.levels.SILENT) {
+                    replaceLoggingMethods(function () {
+                        return noop;
+                    });
+                    return;
+                } else if (typeof console === undefinedType) {
+                    replaceLoggingMethods(function (methodName) {
+                        return function () {
+                            if (typeof console !== undefinedType) {
+                                self.setLevel(level);
+                                self[methodName].apply(self, arguments);
+                            }
+                        };
+                    });
+                    return "No console available for logging";
+                } else {
+                    replaceLoggingMethods(function (methodName) {
+                        if (level <= self.levels[methodName.toUpperCase()]) {
+                            return realMethod(methodName);
+                        } else {
+                            return noop;
+                        }
+                    });
+                }
+            } else if (typeof level === "string" && self.levels[level.toUpperCase()] !== undefined) {
+                self.setLevel(self.levels[level.toUpperCase()]);
+            } else {
+                throw "log.setLevel() called with invalid level: " + level;
+            }
+        };
+
+        self.enableAll = function() {
+            self.setLevel(self.levels.TRACE);
+        };
+
+        self.disableAll = function() {
+            self.setLevel(self.levels.SILENT);
+        };
+
+        loadPersistedLevel();
+        return self;
+    }));
+})();
+
+},{}],12:[function(require,module,exports){
+'use strict';
+
+function nop(){}
+
+module.exports = nop;
+
+},{}],13:[function(require,module,exports){
 var $ = require('unopinionate').selector;
 
 var $document   = $(document),
@@ -769,7 +998,7 @@ $(document).bind('mousedown', click._doAnywheres);
 module.exports = click;
 
 
-},{"unopinionate":27}],12:[function(require,module,exports){
+},{"unopinionate":30}],14:[function(require,module,exports){
 (function (global){
 (function(root) {
     var unopinionate = {
@@ -796,7 +1025,7 @@ module.exports = click;
 })(typeof window != 'undefined' ? window : global);
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var $ = require('unopinionate').selector,
     $document = $(document);
 
@@ -810,7 +1039,7 @@ Drag.prototype = {
 
 module.exports = Drag;
 
-},{"unopinionate":12}],14:[function(require,module,exports){
+},{"unopinionate":14}],16:[function(require,module,exports){
 var $ = require('unopinionate').selector;
 
 var Drop = function(selector, config) {
@@ -822,7 +1051,7 @@ Drop.prototype = {
 };
 
 module.exports = Drop;
-},{"unopinionate":12}],15:[function(require,module,exports){
+},{"unopinionate":14}],17:[function(require,module,exports){
 var Drag = require("./Drag"),
     Drop = require("./Drop");
 
@@ -859,9 +1088,9 @@ drag.drop = function(selector, config) {
 
 module.exports = drag;
 
-},{"./Drag":13,"./Drop":14}],16:[function(require,module,exports){
-module.exports=require(12)
-},{}],17:[function(require,module,exports){
+},{"./Drag":15,"./Drop":16}],18:[function(require,module,exports){
+module.exports=require(14)
+},{}],19:[function(require,module,exports){
 var $ = require('unopinionate').selector,
         specialKeys = require('./specialKeys');
 
@@ -1000,7 +1229,7 @@ Event.prototype = {
 module.exports = Event;
 
 
-},{"./specialKeys":19,"unopinionate":16}],18:[function(require,module,exports){
+},{"./specialKeys":21,"unopinionate":18}],20:[function(require,module,exports){
 var Event = require('./Event.js'),
     events = [];
 
@@ -1033,7 +1262,7 @@ key._createEvent = function(selector) {
 
 module.exports = key;
 
-},{"./Event.js":17}],19:[function(require,module,exports){
+},{"./Event.js":19}],21:[function(require,module,exports){
 //Adopted from [jQuery hotkeys](https://github.com/jeresig/jquery.hotkeys/blob/master/jquery.hotkeys.js)
 
 module.exports = {
@@ -1101,7 +1330,7 @@ module.exports = {
     224: "meta"
 };
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 
 var style = document.createElement('p').style
 var prefixes = 'O ms Moz webkit'.split(' ')
@@ -1174,7 +1403,7 @@ function dashedPrefix(key){
   return key.toLowerCase()
 }
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /*
  * loglevel - https://github.com/pimterry/loglevel
  *
@@ -1357,7 +1586,7 @@ function dashedPrefix(key){
     }));
 })();
 
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 //     Underscore.js 1.5.2
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -2635,9 +2864,105 @@ function dashedPrefix(key){
 
 }).call(this);
 
-},{}],23:[function(require,module,exports){
-var _           = require('underscore'),
-    log         = require('loglevel');
+},{}],25:[function(require,module,exports){
+var $ = require("unopinionate").selector;
+
+var State = function($el) {
+    this.$wrapper = $el;
+    this.data     = {};
+    this.bindings = {};
+};
+
+State.prototype = {
+    _stateCssPrefix:        'state-',
+
+    /*** Get Set ***/
+    set: function(name, value) {
+        //Set Data Store
+        this.data[name] = value;
+
+        //Set Classes
+        this._removeClasses(name);
+        this.$wrapper.addClass(this._stateCssPrefix + name + '-' + value);
+
+        //Trigger Events
+        this.trigger(name);
+    },
+    get: function(name) {
+        return this.data[name];
+    },
+
+    /*** Dump Load ***/
+    dump: function() {
+        return this.data;
+    },
+    load: function(defaults) {
+        var self = this;
+
+        if(this.notFirstTime) {
+            //Reset data
+            this.data = {};
+
+            //Reset classes
+            this._removeClasses();
+        }
+        else {
+            this.notFirstTime = true;
+        }
+        
+        //Set Everything
+        $.each(defaults, function(name, value) {
+            self.set(name, value);
+        });
+    },
+
+    /*** Events ***/
+    bind: function(name, callback) {
+        var binding = this.bindings[name];
+
+        if(binding) {
+            binding.push(callback);
+        }
+        else {
+            binding = [callback];
+        }
+    },
+    unbind: function(name) {
+        delete this.bindings[name];
+    },
+    trigger: function(name) {
+        var binding = this.bindings[name],
+            value   = this.data[name];
+
+        if(binding) {
+            for(var i=0; i<binding.length; i++) {
+                binding[i](value);
+            }
+        }
+    },
+
+    _removeClasses: function(name) {
+        var classes = this.$wrapper[0].className.split(' '),
+            regex = new RegExp('^'+this._stateCssPrefix+name+'-'),
+            i = classes.length;
+
+        while(i--) {
+            if(classes[i].match(regex)) {
+                classes.splice(i, 1);
+            }
+        }
+        
+        this.$wrapper[0].className = classes.join(' ');
+    }
+};
+
+module.exports = State;
+
+
+},{"unopinionate":30}],26:[function(require,module,exports){
+var _   = require('underscore'),
+    log = require('loglevel'),
+    noop = function() {};
 
 var View = function() {};
 
@@ -2647,6 +2972,15 @@ View.prototype = {
     /*** Default Attributes (should be overwritten) ***/
     tagName:    "div",
     className:  "",
+
+    //listeners
+    //'[direction]:[event name]:[from type], ...': function(eventArguments*) {}
+    listeners:    {},
+
+    //State
+    defaultState: {},
+
+    /* Templating */
     template:   "",
 
     //Data goes into the templates and may also be a function that returns an object
@@ -2655,15 +2989,19 @@ View.prototype = {
     //Subviews are a set of subviews that will be fed into the templating engine
     subviews:   {},
 
-    /*** Initialization Functions (should be configured but will be manipulated when defining the subview) ***/
-    config: function(config) { //Runs before render
-        this.listeners = {};
+    reRender:   false, //Determines if subview is re-rendered every time it is spawned
 
-        for(var i=0; i<this.configFunctions.length; i++) {
-            this.configFunctions[i].apply(this, [config]);
+    /* Callbacks */
+    preRender:  noop,
+    postRender: noop,
+
+    /*** Initialization Functions (should be configured but will be manipulated when defining the subview) ***/
+    once: function(config) { //Runs after render
+        for(var i=0; i<this.onceFunctions.length; i++) {
+            this.onceFunctions[i].apply(this, [config]);
         }
     }, 
-    configFunctions: [],
+    onceFunctions: [],
     init: function(config) { //Runs after render
         for(var i=0; i<this.initFunctions.length; i++) {
             this.initFunctions[i].apply(this, [config]);
@@ -2680,8 +3018,10 @@ View.prototype = {
     /*** Rendering ***/
     render: function() {
         var self = this,
-            html = '',
+            html = '';
             postLoad = false;
+
+        this.preRender();
 
         //No Templating Engine
         if(typeof this.template == 'string') {
@@ -2693,13 +3033,8 @@ View.prototype = {
             //Define the subview variable
             data.subview = {};
             $.each(this.subviews, function(name, subview) {
-                if(subview.isViewPool) {
-                    data.subview[name] = subview.template;
-                }
-                else {
-                    postLoad = true;
-                    data.subview[name] = "<script class='post-load-view' type='text/html' data-name='"+name+"'></script>";
-                }
+                postLoad = true;
+                data.subview[name] = "<script class='post-load-view' type='text/html' data-name='"+name+"'></script>";
             });
 
             //Run the templating engine
@@ -2723,18 +3058,26 @@ View.prototype = {
         //Post Load Views
         if(postLoad) {
             this.$wrapper.find('.post-load-view').each(function() {
-                var $this = $(this);
+                var $this = $(this),
+                    view  = self.subviews[$this.attr('data-name')];
+
+                if(view.isViewPool) {
+                    view = view.spawn();
+                }
+
                 $this
-                    .after(self.subviews[$this.attr('data-name')].$wrapper)
+                    .after(view.$wrapper)
                     .remove();
             });
         }
+
+        this.postRender();
 
         return this;
     },
     html: function(html) {
         //Remove & clean subviews in the wrapper 
-        this.$wrapper.find('.subview').each(function() {
+        this.$wrapper.find('.'+this._subviewCssClass).each(function() {
             subview(this).remove();
         });
 
@@ -2761,7 +3104,34 @@ View.prototype = {
 
         return this;
     },
+    $: function(selector) {
+        return this.$wrapper.find(selector);
+    },
 
+    /*** Traversing ***/
+    traverse: function(jqFunc, type) {
+        var $el = this.$wrapper[jqFunc]('.' + (type ? this._subviewCssClass + '-' + type : 'subview'));
+        
+        if($el && $el.length > 0) {
+            return $el[0][subview._domPropertyName];
+        }
+        else {
+            return null;
+        }
+    },
+    parent: function(type) {
+        return this.traverse('closest', type);
+    },
+    next: function(type) {
+        return this.traverse('next', type);
+    },
+    prev: function(type) {
+        return this.traverse('prev', type);
+    },
+    children: function(type) {
+        return this.traverse('find', type);
+    },
+    
     /*** Event API ***/
     trigger: function(name, args) {
         var self = this;
@@ -2775,8 +3145,8 @@ View.prototype = {
             all:    null
         };
 
-        _.find(directions, function(jqFunc, dir) {
-            var selector = '.listener-'+name+'-'+dir;
+        _.find(directions, function(jqFunc, direction) {
+            var selector = '.listener-'+direction+'-'+name;
             selector = selector + ', ' + selector+'-'+self.type;
 
             //Select $wrappers with the right listener class in the right direction
@@ -2787,118 +3157,61 @@ View.prototype = {
                 var recipient = subview($els[i]);
 
                 //Check for a subview type specific callback
-                var typedCallback = recipient.listeners[self.type + ":" + name + ":" + dir];
-                if(typedCallback && typedCallback.apply(self, args) === false) {
+                var typedCallback = recipient.listeners[direction + ":" + name + ":" + self.type];
+                if(typedCallback && typedCallback.apply(recipient, args) === false) {
                     return true; //Breaks if callback returns false
                 }
 
                 //Check for a general event callback
-                var untypedCallback = recipient.listeners[name + ":" + dir];
-                if(untypedCallback && untypedCallback.apply(self, args) === false) {
+                var untypedCallback = recipient.listeners[direction + ":" + name];
+                if(untypedCallback && untypedCallback.apply(recipient, args) === false) {
                     return true; //Breaks if callback returns false
                 }
             }
         });
     },
-    listen: function(event, callback, direction) {
+    _bindListeners: function() {
         var self = this;
-        
-        if(typeof event == 'string') {
-            addListener(event, callback, direction);
-        }
-        else {
-            _.each(event, function(callback, event) {
-                addListener(event, callback, direction);
-            });
-        }
 
-        function addListener(eventName, callback, direction) {
-            direction = direction || 'all';
+        $.each(this.listeners, function(events, callback) {
 
             //Parse the event format "[view type]:[event name], [view type]:[event name]"
-            _.each(eventName.split(','), function(event) {
-                var eventParts = event.replace(/ /g, '').split(':');
+            events = events.split(',');
+            var i = events.length;
+
+            while(i--) {
+                var event       = events[i].replace(/ /g, ''),
+                    eventParts  = event.split(':');
                 
-                var eventName = eventParts.length > 1 ? eventParts[1] : eventParts[0],
-                    viewType  = eventParts.length > 1 ? eventParts[0] : null;
-
+                var direction = eventParts[0],
+                    name      = eventParts[1],
+                    viewType  = eventParts[2] || null;
+                
                 //Add the listener class
-                self.$wrapper.addClass('listener-'+eventName+'-'+direction+(viewType ? '-'+viewType : ''));
+                if(direction != 'self') {
+                    self.$wrapper.addClass('listener-' + direction + '-' + name + (viewType ? '-' + viewType : ''));
+                }
 
-                //Save the callback
-                self.listeners[eventName+":"+direction] = callback;
-            });
-        }
-
-        return this;
-    },
-    listenUp: function(event, callback) {
-        this.listen(event, callback, 'up');
-        return this;
-    },
-    listenDown: function(event, callback) {
-        this.listen(event, callback, 'down');
-        return this;
-    },
-    listenAcross: function(event, callback) {
-        this.listen(event, callback, 'across');
-        return this;
-    },
-    mirror: function(event) {
-        var self = this;
-
-        this.listen(event, function() {
-            self.trigger(event);
+                //Fix the listeners callback
+                self.listeners[event] = callback;
+            }
         });
 
         return this;
     },
-    bind: function(event, callback) { //NOT WORKING
-        this.listen(event, callback, 'self');
-        return this;
-    },
-
-    /*** Traversing ***/
-    parent: function(type) {
-        var $el = this.$wrapper.closest('.' + (type ? this._viewCssPrefix + type : 'subview'));
-        
-        if($el && $el.length > 0) {
-            return $el[0][subview._domPropertyName];
-        }
-        else {
-            return null;
-        }
-    },
-    next: function(type) {
-
-    },
-    prev: function(type) {
-
-    },
-    children: function(type) {
-
-    },
 
     /*** Classes ***/
     _active: false,
-    _viewCssPrefix: 'subview-',
-    _getClasses: function() {
-        return this.wrapper.className.split(/\s+/);
-    },
-    _setClasses: function(classes) {
-        var newClassName = classes.join(' ');
-        if(this.wrapper.className != newClassName) this.wrapper.className = newClassName;
-
-        return this;
-    },
+    _subviewCssClass: 'subview',
     _addDefaultClasses: function() {
-        var classes = this._getClasses();
-        classes.push(this._viewCssPrefix + this.type);
+        var classes = [];
+
+        classes.push(this._subviewCssClass + '-' + this.type);
 
         var superClass = this.super;
         while(true) {
             if(superClass.type) {
-                classes.push(this._viewCssPrefix + superClass.type);
+                classes.push(this._subviewCssClass + '-' + superClass.type);
                 superClass = superClass.super;
             }
             else {
@@ -2907,12 +3220,10 @@ View.prototype = {
         }
 
         //Add Default View Class
-        classes.push('subview');
+        classes.push(this._subviewCssClass);
 
-        //Add className
-        classes = classes.concat(this.className.split(' '));
-
-        this._setClasses(_.uniq(classes));
+        //Add classes to the DOM
+        this.$wrapper.addClass(classes.join(' '));
 
         return this;
     }
@@ -2921,16 +3232,16 @@ View.prototype = {
 module.exports = View;
 
 
-},{"loglevel":21,"underscore":22}],24:[function(require,module,exports){
-var $ = require("unopinionate").selector;
+},{"loglevel":23,"underscore":24}],27:[function(require,module,exports){
+var $       = require("unopinionate").selector,
+    State   = require('./State');
 
 var ViewPool = function(View) {
     //Configuration
     this.View   = View;
     this.type   = View.prototype.type;
     this.super  = View.prototype.super;
-    this.template = "<"+this.View.prototype.tagName+" class='"+this.View.prototype._viewCssPrefix + this.View.prototype.type+" "+this.View.prototype.className+"'></"+this.View.prototype.tagName+">";
-
+    
     //View Configuration
     this.View.prototype.pool = this;
 
@@ -2950,30 +3261,50 @@ ViewPool.prototype = {
             return el.view;
         }
         else {
+            var view;
             config = config || ($.isPlainObject(el) ? el : undefined);
             
             //Get the DOM node
             if(!el || !el.nodeType) {
                 if(this.pool.length !== 0) {
-                    return this.pool.pop();
+                    view = this.pool.pop();
                 }
                 else {
                     el = document.createElement(this.View.prototype.tagName);
                     $el = $(el);
                 }
             }
+
+            var isNewView;
+            if(!view) {
+                isNewView   = true;
+                view        = new this.View();
+
+                //Bind to/from the element
+                el[subview._domPropertyName] = view;
+                view.wrapper  = el;
+                view.$wrapper = $el;
+
+                view.state = new State($el);
+
+                view._addDefaultClasses();
+                view._bindListeners();
+
+                view.once();
+            }
             
-            var view = new this.View();
-            el[subview._domPropertyName] = view;
-            
-            view.wrapper  = el;
-            view.$wrapper = $el;
-            view._addDefaultClasses();
+            //Make the view active
             view._active = true;
 
-            //Render (don't chain since introduces opportunity for user error)
-            view.config(config); 
-            view.render();
+            //Set the default state
+            view.state.load(view.defaultState);
+
+            //Render
+            if(isNewView || view.reRender) {
+                view.render();
+            }
+
+            //Initialize
             view.init(config);
 
             return view;
@@ -2986,7 +3317,7 @@ ViewPool.prototype = {
         this.pool = null;
         delete subview.views[this.type];
     },
-
+    
     _release: function(view) {
         view._active = false;
         this.pool.push(view);
@@ -2996,13 +3327,13 @@ ViewPool.prototype = {
 
 module.exports = ViewPool;
 
-},{"unopinionate":27}],25:[function(require,module,exports){
+},{"./State":25,"unopinionate":30}],28:[function(require,module,exports){
 var _               = require("underscore"),
     log             = require("loglevel"),
     $               = require("unopinionate").selector,
     ViewPool        = require("./ViewPool"),
     ViewTemplate    = require("./View"),
-    viewTypeRegex   = new RegExp('^' + ViewTemplate.prototype._viewCssPrefix);
+    viewTypeRegex   = new RegExp('^' + ViewTemplate.prototype._subviewCssClass + '-');
 
 var subview = function(name, protoViewPool, config) {
     var ViewPrototype;
@@ -3027,15 +3358,14 @@ var subview = function(name, protoViewPool, config) {
 
         config = config || {};
 
-        //Validate Name
-        if(subview._validateName(name)) {
-
+        //Validate Name && Configuration
+        if(subview._validateName(name) && subview._validateConfig(config)) {
             //Create the new View
-            var View = function() {},
-                superClass = new ViewPrototype();
+            var View        = function() {},
+                superClass  = new ViewPrototype();
 
             //Extend the existing init, config & clean functions rather than overwriting them
-            _.each(['init', 'config', 'clean'], function(name) {
+            _.each(['once', 'init', 'clean'], function(name) {
                 config[name+'Functions'] = superClass[name+'Functions'].slice(0); //Clone superClass init
                 if(config[name]) {
                     config[name+'Functions'].push(config[name]);
@@ -3043,12 +3373,34 @@ var subview = function(name, protoViewPool, config) {
                 }
             });
 
+            //Extend the listeners object
+            if(config.listeners) {
+                $.each(superClass.listeners, function(event, callback) {
+                    if(config.listeners[event]) {
+                        //Extend the function
+                        config.listeners[event] = (function(oldCallback, newCallback) {
+                            return function() {
+                                if(oldCallback.apply(this, arguments) === false) {
+                                    return false;
+                                }
+                                
+                                return newCallback.apply(this, arguments);
+                            };
+                        })(config.listeners[event], callback);
+                    }
+                    else {
+                        config.listeners[event] = callback;
+                    }
+                });
+            }
+            
+            //Build The New View
             View.prototype       = _.extend(superClass, config);
             View.prototype.type  = name;
             View.prototype.super = ViewPrototype.prototype;
             
             //Save the New View
-            var viewPool = new ViewPool(View);
+            var viewPool        = new ViewPool(View);
             subview.views[name] = viewPool;
 
             return viewPool;
@@ -3120,6 +3472,35 @@ subview._validateName = function(name) {
     return true;
 };
 
+subview._reservedMethods = [
+    'html',
+    'remove',
+    'parent',
+    'children',
+    'next',
+    'prev',
+    'trigger',
+    'traverse',
+    '$',
+    '_bindListeners',
+    '_active',
+    '_subviewCssClass',
+    '_addDefaultClasses'
+];
+
+subview._validateConfig = function(config) {
+    var success = true;
+
+    $.each(config, function(name, value) {
+        if(subview._reservedMethods.indexOf(name) != -1) {
+            console.error("Method '"+name+"' is reserved as part of the subview API.");
+            success = false;
+        }
+    });
+
+    return success;
+};
+
 subview.init = function() {
     var Main = subview.lookup('main');
 
@@ -3138,7 +3519,7 @@ $(function() {
     }
 });
 
-},{"./View":23,"./ViewPool":24,"loglevel":21,"underscore":22,"unopinionate":27}],26:[function(require,module,exports){
+},{"./View":26,"./ViewPool":27,"loglevel":23,"underscore":24,"unopinionate":30}],29:[function(require,module,exports){
 //     Underscore.js 1.6.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -4483,9 +4864,9 @@ $(function() {
   }
 }).call(this);
 
-},{}],27:[function(require,module,exports){
-module.exports=require(12)
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
+module.exports=require(14)
+},{}],31:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4502,7 +4883,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if(stack1 || stack1 === 0) { buffer += stack1; }
   return buffer;
   });
-},{"handlebars/runtime":10}],29:[function(require,module,exports){
+},{"handlebars/runtime":10}],32:[function(require,module,exports){
 var subview = require('subview'),
     code    = require('./code'),
     toolbar = require('./toolbar'),
@@ -4511,23 +4892,24 @@ var subview = require('subview'),
 require('./Editor.less');
 
 module.exports = subview('Editor', {
-    init: function() {
-        this.listen('open, save', function() {
+    listeners: {
+        'all:open, all:save': function() {
+            console.log(code.dump());
             programs.set(toolbar.getName(), code.dump());
-        });
-
-        this.listen('openFile', function(fileName) {
+        },
+        'all:openFile': function(fileName) {
             toolbar.setName(fileName);
-            code.load(programs.get(fileName));
-        });
-
-        this.listen('new', function() {
+            programs.get(fileName, function(file) {
+                code.load(file);
+            });
+        },
+        'all:new': function() {
             code.empty();
 
             setTimeout(function() {
                 toolbar.focusName();
             }, 300);
-        });
+        }
     },
     template: require('./Editor.handlebars'),
     subviews: {
@@ -4537,9 +4919,9 @@ module.exports = subview('Editor', {
     }
 });
 
-},{"../../models/programs":3,"./Editor.handlebars":28,"./Editor.less":30,"./Tray/Tray":35,"./code":37,"./toolbar":38,"subview":25}],30:[function(require,module,exports){
+},{"../../models/programs":3,"./Editor.handlebars":31,"./Editor.less":33,"./Tray/Tray":38,"./code":40,"./toolbar":41,"subview":28}],33:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Toolbar{position:absolute;height:50px;width:100%}.subview-Code{position:absolute;bottom:150px;top:50px;width:100%}.subview-Tray{position:absolute;height:150px;bottom:0;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],31:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4548,7 +4930,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
   return "<button class='Editor-Toolbar-open'>Open</button>\n\n<input type='text' class='Editor-Toolbar-name' placeholder='Untitled' />\n\n<button class='Editor-Toolbar-run'>Run</button>";
   });
-},{"handlebars/runtime":10}],32:[function(require,module,exports){
+},{"handlebars/runtime":10}],35:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
     click    = require('onclick'),
     code     = require('../code'),
@@ -4592,9 +4974,9 @@ module.exports = Toolbar.extend('Editor-Toolbar', {
     }
 });
 
-},{"../../Run/terminal":56,"../../UI/Toolbar/Toolbar":133,"../code":37,"./Toolbar.handlebars":31,"./Toolbar.less":33,"onclick":11}],33:[function(require,module,exports){
+},{"../../Run/terminal":59,"../../UI/Toolbar/Toolbar":136,"../code":40,"./Toolbar.handlebars":34,"./Toolbar.less":36,"onclick":13}],36:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Editor-Toolbar-run{float:right}.Editor-Toolbar-open{float:left}.Editor-Toolbar-name{position:absolute;left:50%;bottom:0;margin-left:-100px;width:200px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;background:0 0;border:0;text-align:center;font-size:inherit;font-family:inherit;color:inherit}.Editor-Toolbar-name:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],34:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4619,7 +5001,7 @@ function program1(depth0,data) {
   if(stack1 || stack1 === 0) { return stack1; }
   else { return ''; }
   });
-},{"handlebars/runtime":10}],35:[function(require,module,exports){
+},{"handlebars/runtime":10}],38:[function(require,module,exports){
 var subview = require('subview'),
     buttons = require('../../UI/Code/Tokens/index'),
     drag    = require('ondrag'),
@@ -4675,9 +5057,9 @@ module.exports = subview('Tray', {
         };
     }
 });
-},{"../../UI/Code/Tokens/index":128,"../../UI/Code/cursor":129,"./Tray.handlebars":34,"./Tray.less":36,"onclick":11,"ondrag":15,"subview":25}],36:[function(require,module,exports){
+},{"../../UI/Code/Tokens/index":131,"../../UI/Code/cursor":132,"./Tray.handlebars":37,"./Tray.less":39,"onclick":13,"ondrag":17,"subview":28}],39:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Tray{background:#F1F0F0;padding:5px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.Tray-Button{display:inline-block;padding:2px 5px;margin:2px 0;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;background:#1075F6;color:#fff;cursor:pointer}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],37:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 var code = require('../UI/Code/Code').spawn();
 
 code.configure({
@@ -4689,9 +5071,9 @@ code.configure({
 
 module.exports = code;
 
-},{"../Run/terminal":56,"../UI/Code/Code":57}],38:[function(require,module,exports){
+},{"../Run/terminal":59,"../UI/Code/Code":60}],41:[function(require,module,exports){
 module.exports = require('./Toolbar/Toolbar').spawn();
-},{"./Toolbar/Toolbar":32}],39:[function(require,module,exports){
+},{"./Toolbar/Toolbar":35}],42:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4701,8 +5083,8 @@ function program1(depth0,data) {
   
   var buffer = "", stack1, helper;
   buffer += "\n        <li class='FileSystem-file' data-name='";
-  if (helper = helpers.path) { stack1 = helper.call(depth0, {hash:{},data:data}); }
-  else { helper = (depth0 && depth0.path); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
+  if (helper = helpers.name) { stack1 = helper.call(depth0, {hash:{},data:data}); }
+  else { helper = (depth0 && depth0.name); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
   buffer += escapeExpression(stack1)
     + "'>";
   if (helper = helpers.name) { stack1 = helper.call(depth0, {hash:{},data:data}); }
@@ -4718,7 +5100,7 @@ function program1(depth0,data) {
   buffer += "\n</ul>";
   return buffer;
   });
-},{"handlebars/runtime":10}],40:[function(require,module,exports){
+},{"handlebars/runtime":10}],43:[function(require,module,exports){
 var subview  = require('subview'),
     click    = require('onclick'),
     _        = require('underscore'),
@@ -4750,9 +5132,9 @@ module.exports = subview('FileSystem', {
     },
     template: require('./FileSystem.handlebars')
 });
-},{"../../../models/programs":3,"./FileSystem.handlebars":39,"./FileSystem.less":41,"onclick":11,"subview":25,"underscore":26}],41:[function(require,module,exports){
-(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".FileSystem-list{list-style:none;padding:0;margin:0}.FileSystem-file{line-height:46px;border-bottom:1px solid #F1F1F1;margin-left:15px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],42:[function(require,module,exports){
+},{"../../../models/programs":3,"./FileSystem.handlebars":42,"./FileSystem.less":44,"onclick":13,"subview":28,"underscore":29}],44:[function(require,module,exports){
+(function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".FileSystem-list{list-style:none;padding:0;margin:0;cursor:pointer}.FileSystem-file{line-height:46px;border-bottom:1px solid #F1F1F1;margin-left:15px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
+},{}],45:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4766,7 +5148,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if(stack1 || stack1 === 0) { buffer += stack1; }
   return buffer;
   });
-},{"handlebars/runtime":10}],43:[function(require,module,exports){
+},{"handlebars/runtime":10}],46:[function(require,module,exports){
 var subview = require('subview');
 
 require('./Files.less');
@@ -4779,9 +5161,9 @@ module.exports = subview('Files', {
     }
 });
 
-},{"./FileSystem/FileSystem":40,"./Files.handlebars":42,"./Files.less":44,"./Toolbar/Toolbar":46,"subview":25}],44:[function(require,module,exports){
+},{"./FileSystem/FileSystem":43,"./Files.handlebars":45,"./Files.less":47,"./Toolbar/Toolbar":49,"subview":28}],47:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-FileSystem{position:absolute;top:50px;bottom:0;overflow:auto;width:100%}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],45:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4790,7 +5172,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
   return "<button class='Files-Toolbar-new'>New</button>\n\nTouchScript\n\n<button class='Files-Toolbar-delete'>Delete</button>";
   });
-},{"handlebars/runtime":10}],46:[function(require,module,exports){
+},{"handlebars/runtime":10}],49:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
     click    = require('onclick');
 
@@ -4812,9 +5194,9 @@ module.exports = Toolbar.extend('Files-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../UI/Toolbar/Toolbar":133,"./Toolbar.handlebars":45,"./Toolbar.less":47,"onclick":11}],47:[function(require,module,exports){
+},{"../../UI/Toolbar/Toolbar":136,"./Toolbar.handlebars":48,"./Toolbar.less":50,"onclick":13}],50:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Files-Toolbar-delete{float:right}.Files-Toolbar-new{float:left}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],48:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4828,7 +5210,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   if(stack1 || stack1 === 0) { buffer += stack1; }
   return buffer;
   });
-},{"handlebars/runtime":10}],49:[function(require,module,exports){
+},{"handlebars/runtime":10}],52:[function(require,module,exports){
 var subview = require('subview');
 
 require('./Run.less');
@@ -4841,9 +5223,9 @@ module.exports = subview('Run', {
     }
 });
 
-},{"./Run.handlebars":48,"./Run.less":50,"./Toolbar/Toolbar":54,"./terminal":56,"subview":25}],50:[function(require,module,exports){
+},{"./Run.handlebars":51,"./Run.less":53,"./Toolbar/Toolbar":57,"./terminal":59,"subview":28}],53:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Run-Terminal{position:absolute;top:50px;bottom:0;width:100%;padding:10px;font-family:Consolas,monaco,monospace;-webkit-overflow-scrolling:touch;overflow:auto}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],51:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 var subview = require('subview'),
     key     = require('onkey');
 
@@ -4873,9 +5255,9 @@ module.exports = subview("Run-Terminal", {
     }
 });
 
-},{"./Terminal.less":52,"onkey":18,"subview":25}],52:[function(require,module,exports){
+},{"./Terminal.less":55,"onkey":20,"subview":28}],55:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],53:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -4884,7 +5266,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
 
   return "<button class='Run-Toolbar-exit'>Exit</button>\n";
   });
-},{"handlebars/runtime":10}],54:[function(require,module,exports){
+},{"handlebars/runtime":10}],57:[function(require,module,exports){
 var Toolbar  = require('../../UI/Toolbar/Toolbar'),
     click    = require('onclick'),
     code     = require('../../Editor/code');
@@ -4905,29 +5287,28 @@ module.exports = Toolbar.extend('Run-Toolbar', {
     template: require('./Toolbar.handlebars')
 });
 
-},{"../../Editor/code":37,"../../UI/Toolbar/Toolbar":133,"./Toolbar.handlebars":53,"./Toolbar.less":55,"onclick":11}],55:[function(require,module,exports){
+},{"../../Editor/code":40,"../../UI/Toolbar/Toolbar":136,"./Toolbar.handlebars":56,"./Toolbar.less":58,"onclick":13}],58:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".Run-Toolbar-exit{float:left}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],56:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 module.exports = require('./Terminal/Terminal').spawn();
 
-},{"./Terminal/Terminal":51}],57:[function(require,module,exports){
+},{"./Terminal/Terminal":54}],60:[function(require,module,exports){
 var Block       = require('./Components/Block'),
-    Environment = require('./Components/EnvironmentModel');
+    Environment = require('./Components/EnvironmentModel'),
+    _           = require('underscore'),
+    noop        = require('nop');
 
 require('./Code.less');
 
-var noop = function() {};
-
 module.exports = Block.extend('Code', {
+    listeners: {
+        'down:error': function() {
+            this.onError.apply(this, arguments);
+        }
+    },
     init: function() {
-        var self = this;
-
         this.environment = new Environment();
         this.focus();
-
-        this.listenDown('error', function() {
-            self.onError.apply(this, arguments);
-        });
     },
     configure: function(config) {
         this.terminal = config.terminal || null;
@@ -4941,35 +5322,40 @@ module.exports = Block.extend('Code', {
     kill: function() {
         this.running = false;
     },
+    dump: function() {
+        return _.extend(this.super.dump.apply(this), {
+            version: "0.0.1"
+        });
+    },
 
     /*** Events ***/
     onError: noop
 });
 
-},{"./Code.less":58,"./Components/Block":59,"./Components/EnvironmentModel":61}],58:[function(require,module,exports){
+},{"./Code.less":61,"./Components/Block":62,"./Components/EnvironmentModel":64,"nop":12,"underscore":29}],61:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code{overflow:auto;-webkit-overflow-scrolling:touch;font-family:Consolas,monaco,monospace;line-height:1.6em;-webkit-tap-highlight-color:rgba(0,0,0,0);-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none}.subview-Code-Line{min-height:1.6em}[contenteditable=true]{-moz-user-select:text;-ms-user-select:text;-khtml-user-select:text;-webkit-user-select:text;-o-user-select:text;user-select:text}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],59:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 var subview     = require('subview'),
     cursor      = require('../cursor'),
-    Line        = require('./Line');
+    Line        = require('./Line'),
+    _           = require('underscore');
 
 require('./Block.less');
 
 module.exports = subview('Code-Block', {
-    init: function() {
-        var self = this;
-
-        this.empty();
-
-        this.listenDown('Code-Cursor:paste', function() {
-            var last = subview(self.$wrapper.children().last());
+    listeners: {
+        'down:paste:Code-Cursor': function() {
+            var last = subview(this.$wrapper.children().last());
 
             if(!last.isEmpty()) {
-                self.addLine();
+                this.addLine();
             }
 
             return false;
-        });
+        }
+    },
+    init: function() {
+        this.empty();
     },
     empty: function() {
         this.html('');
@@ -4977,8 +5363,13 @@ module.exports = subview('Code-Block', {
 
         return this;
     },
-    addLine: function(i) {
+    addLine: function(content) {
         var line = Line.spawn();
+
+        if(content) {
+            line.load(content);
+        }
+
         this.$wrapper.append(line.$wrapper);
         return line;
     },
@@ -5007,16 +5398,24 @@ module.exports = subview('Code-Block', {
         return this;
     },
     dump: function() {
-        
+        return {
+            type:  this.type,
+            lines: _.map(this.$wrapper.children('.subview-Code-Line'), function(child) {
+                return subview(child).dump();
+            })
+        };
     },
-    load: function() {
-        
+    load: function(file) {
+        console.log(file);
+        for(var i=0; i<file.lines.length; i++) {
+            this.addLine(file.lines[i]);
+        }
     }
 });
 
-},{"../cursor":129,"./Block.less":60,"./Line":64,"subview":25}],60:[function(require,module,exports){
+},{"../cursor":132,"./Block.less":63,"./Line":67,"subview":28,"underscore":29}],63:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Block{background:rgba(255,255,255,.36);-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px;color:#111}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],61:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 var Environment = function() {
     this.clear();
 };
@@ -5034,10 +5433,11 @@ Environment.prototype = {
 };
 
 module.exports = Environment;
-},{}],62:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 var subview = require('subview'),
     cursor  = require('../cursor'),
-    click   = require('onclick');
+    click   = require('onclick'),
+    _       = require('underscore');
 
 require('./Field.less');
 
@@ -5046,12 +5446,12 @@ click('.subview-Code-Field', function(e) {
 });
 
 module.exports = subview('Code-Field', {
-    dump: function() {
-
-    },
     focus: function() {
         cursor.appendTo(this.$wrapper);
         return this;
+    },
+    $getTokens: function() {
+        return this.$wrapper.children('.subview-Code-Token');
     },
     run: function(callback) {
         var stack = [],
@@ -5060,7 +5460,7 @@ module.exports = subview('Code-Field', {
             next;
 
         //Get Tokens
-        var $tokens = this.$wrapper.children('.subview-Code-Token');
+        var $tokens = this.$getTokens();
 
         //Ignore Empty Lines
         if($tokens.length === 0) {
@@ -5165,12 +5565,32 @@ module.exports = subview('Code-Field', {
             return stack[0];
         }
     },
-    error: require('./error')
+    error: require('./error'),
+    dump: function() {
+        return {
+            type:   this.type,
+            tokens: _.map(this.$getTokens(), function(token) {
+                return subview(token).dump();
+            })
+        };
+    },
+    load: function(file) {
+        for(var i=0; i<file.tokens; i++) {
+            var token = subview.lookup(tokens[i].type);
+            token.spawn();
+
+            if(token.content) {
+                token.load(token.content);
+            }
+
+            this.$wrapper.append(token.$wrapper);
+        }
+    }
 });
 
-},{"../cursor":129,"./Field.less":63,"./error":66,"onclick":11,"subview":25}],63:[function(require,module,exports){
-module.exports=require(52)
-},{}],64:[function(require,module,exports){
+},{"../cursor":132,"./Field.less":66,"./error":69,"onclick":13,"subview":28,"underscore":29}],66:[function(require,module,exports){
+module.exports=require(55)
+},{}],67:[function(require,module,exports){
 var Field = require('./Field');
 
 require('./Line.less');
@@ -5181,9 +5601,9 @@ module.exports = Field.extend('Code-Line', {
     }
 });
 
-},{"./Field":62,"./Line.less":65}],65:[function(require,module,exports){
+},{"./Field":65,"./Line.less":68}],68:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code{counter-reset:lineNumber}.subview-Code-Line{position:relative;padding-left:30px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}.subview-Code-Line:before{font-family:Consolas,monaco,monospace;counter-increment:lineNumber;content:counter(lineNumber);position:absolute;height:100%;width:34px;left:-4px;padding-left:8px;padding-top:.1em;background:rgba(241,240,240,.53);border-right:1px solid rgba(0,0,0,.15);color:#555;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],66:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 var Tooltip = require('../../Tooltip/Tooltip'),
     subview = require('subview'),
     click   = require('onclick');
@@ -5223,9 +5643,9 @@ module.exports = function(msg) {
     return error;
 };
 
-},{"../../Tooltip/Tooltip":136,"./error.less":67,"onclick":11,"subview":25}],67:[function(require,module,exports){
+},{"../../Tooltip/Tooltip":139,"./error.less":70,"onclick":13,"subview":28}],70:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Error{background:#f70000;color:#fff;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding:2px 6px}.Code-Error-arrow{background:#f70000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],68:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 var Field = require('../Components/Field');
 require('./Argument.less');
 
@@ -5240,9 +5660,9 @@ module.exports = Field.extend('Code-Argument', {
     tagName: 'span'
 });
 
-},{"../Components/Field":62,"./Argument.less":69}],69:[function(require,module,exports){
+},{"../Components/Field":65,"./Argument.less":72}],72:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Argument{background:rgba(255,255,255,.5);padding:.3em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],70:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 var Token       = require('../Token'),
     Argument    = require('../Argument'),
     Var         = require('../Literals/Var/Var'),
@@ -5279,14 +5699,26 @@ module.exports = Token.extend('Code-Assign', {
     },
     focus: function() {
         this.name.focus();
+    },
+    dump: function() {
+        return {
+            type:  this.type,
+            name:  this.name.dump(),
+            value: this.value.dump()
+        };
+    },
+    load: function(content) {
+        this.name.load(content.name);
+        this.value.load(content.value);
     }
 });
-},{"../Argument":68,"../Literals/Var/Var":95,"../Token":126,"./Assign.less":71,"onkey":18}],71:[function(require,module,exports){
+},{"../Argument":71,"../Literals/Var/Var":98,"../Token":129,"./Assign.less":74,"onkey":20}],74:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Assign{background:#87F08B;display:inline;padding:.3em 0 .3em 2px;margin:0 2px;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],72:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 var Control  = require('../Control'),
     Argument = require('../../Argument'),
-    Block    = require('../../../Components/Block');
+    Block    = require('../../../Components/Block'),
+    _        = require('underscore');
 
 require('./Conditional.less');
 
@@ -5363,12 +5795,27 @@ module.exports = Control.extend('Code-Conditional', {
     },
     focus: function() {
         this.conditions[0].arg.focus();
+    },
+    dump: function() {
+        return {
+            type: this.type,
+            conditions: _.map(this.conditions, function(condition) {
+                return {
+                    block: condition.block.dump(),
+                    arg:   condition.arg.dump()
+                };
+            }),
+            elseCondition: this.elseCondition.block.dump()
+        };
+    },
+    load: function(content) {
+
     }
 });
 
-},{"../../../Components/Block":59,"../../Argument":68,"../Control":74,"./Conditional.less":73}],73:[function(require,module,exports){
+},{"../../../Components/Block":62,"../../Argument":71,"../Control":77,"./Conditional.less":76,"underscore":29}],76:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Conditional{background:#BDE2FF;color:#19297C}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],74:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 require('./Control.less');
 
 module.exports = require('../Token').extend('Code-Control', {
@@ -5390,9 +5837,9 @@ module.exports = require('../Token').extend('Code-Control', {
     }
 });
 
-},{"../Token":126,"./Control.less":75}],75:[function(require,module,exports){
+},{"../Token":129,"./Control.less":78}],78:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Control{background:#FFB2B2;color:#880A0A;padding:.05em 0 0;display:inline-block;min-width:100%}.Code-Control-Header{padding:2px 4px}.Code-Control-Header .subview-Code-Argument{-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:.3em 2px}.subview-Code-Control .subview-Code-Block{min-width:240px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],76:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 var Control  = require('../Control'),
     Argument = require('../../Argument'),
     Block    = require('../../../Components/Block');
@@ -5438,19 +5885,31 @@ module.exports = Control.extend('Code-While', {
     },
     focus: function() {
         this.condition.focus();
+    },
+    dump: function() {
+        return {
+            type:       this.type,
+            condition:  this.condition.dump(),
+            block:      this.block.dump()
+        };
+    },
+    load: function(content) {
+        this.condition.load(content.condition);
+        this.block.load(content.block);
     }
 });
 
-},{"../../../Components/Block":59,"../../Argument":68,"../Control":74,"./While.less":77}],77:[function(require,module,exports){
+},{"../../../Components/Block":62,"../../Argument":71,"../Control":77,"./While.less":80}],80:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-While .Code-Control-Header .subview-Code-Argument{padding:.2em 2px .3em;top:-.05em;position:relative}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],78:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 module.exports = [
     require("./Conditional/Conditional"),
     require("./Loop/While")
 ];
-},{"./Conditional/Conditional":72,"./Loop/While":76}],79:[function(require,module,exports){
+},{"./Conditional/Conditional":75,"./Loop/While":79}],82:[function(require,module,exports){
 var Argument = require('../Argument'),
-    cursor   = require('../../cursor');
+    cursor   = require('../../cursor'),
+    _        = require('underscore');
 
 require('./Function.less');
 
@@ -5493,12 +5952,26 @@ module.exports = require('../Token').extend('Function', {
         else {
             this.$wrapper.after(cursor);
         }
+    },
+    dump: function() {
+        return {
+            type: this.type,
+            arguments: _.map(this.argumentInstances, function(arg) {
+                return arg.dump();
+            })
+        };
+    },
+    load: function(content) {
+        var self = this;
+        _.each(content.arguments, function(arg, i) {
+            self.argumentInstances[i].load(arg);
+        });
     }
 });
 
-},{"../../cursor":129,"../Argument":68,"../Token":126,"./Function.less":80}],80:[function(require,module,exports){
+},{"../../cursor":132,"../Argument":71,"../Token":129,"./Function.less":83,"underscore":29}],83:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Function{display:inline;background:#D3FFC5;color:#2C2C2C;padding:.3em;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;margin:0 2px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],81:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 var Func = require('../Function');
 
 require('./Parentheses.less');
@@ -5516,9 +5989,9 @@ module.exports = Func.extend('Parentheses', {
         }
     ]
 });
-},{"../Function":79,"./Parentheses.less":82}],82:[function(require,module,exports){
+},{"../Function":82,"./Parentheses.less":85}],85:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Parentheses{color:#000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],83:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 var Func = require('../Function');
 
 require('./Print.less');
@@ -5543,17 +6016,17 @@ module.exports = Func.extend('print', {
     }
 });
 
-},{"../Function":79,"./Print.less":84}],84:[function(require,module,exports){
-module.exports=require(52)
-},{}],85:[function(require,module,exports){
+},{"../Function":82,"./Print.less":87}],87:[function(require,module,exports){
+module.exports=require(55)
+},{}],88:[function(require,module,exports){
 module.exports = [
     require('./Print/Print'),
     require('./Parentheses/Parentheses')
 ];
 
-},{"./Parentheses/Parentheses":81,"./Print/Print":83}],86:[function(require,module,exports){
+},{"./Parentheses/Parentheses":84,"./Print/Print":86}],89:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-false,.subview-true{color:#FFF;background:#53AEF7;line-height:1.3em;margin:.15em}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],87:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -5568,7 +6041,7 @@ module.exports = Literal.extend('false', {
     }
 });
 
-},{"../Literal":89,"./Boolean.less":86}],88:[function(require,module,exports){
+},{"../Literal":92,"./Boolean.less":89}],91:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Boolean.less');
 
@@ -5583,7 +6056,7 @@ module.exports = Literal.extend('true', {
     }
 });
 
-},{"../Literal":89,"./Boolean.less":86}],89:[function(require,module,exports){
+},{"../Literal":92,"./Boolean.less":89}],92:[function(require,module,exports){
 require('./Literal.less');
 
 module.exports = require('../Token').extend('Literal', {
@@ -5591,9 +6064,9 @@ module.exports = require('../Token').extend('Literal', {
     val: function() {}
 });
 
-},{"../Token":126,"./Literal.less":90}],90:[function(require,module,exports){
+},{"../Token":129,"./Literal.less":93}],93:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Literal{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 4px;margin:0 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],91:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 var Literal = require('../Literal');
 require('./Number.less');
 
@@ -5614,12 +6087,21 @@ module.exports = Literal.extend('Code-Number', {
     },
     val: function() {
         return parseFloat(this.$input.val(), 10);
+    },
+    dump: function() {
+        return {
+            type:  this.type,
+            value: this.val()
+        };
+    },
+    load: function(content) {
+        this.$input.val(content.val);
     }
 });
 
-},{"../Literal":89,"./Number.less":92}],92:[function(require,module,exports){
+},{"../Literal":92,"./Number.less":95}],95:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Number{color:purple}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],93:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 var Literal = require('../Literal'),
     subview = require('subview');
 
@@ -5642,12 +6124,21 @@ module.exports = Literal.extend('Code-String', {
     },
     val: function() {
         return this.$input.text();
+    },
+    dump: function() {
+        return {
+            type:  this.type,
+            value: this.val()
+        };
+    },
+    load: function(content) {
+        this.$input.html(content.val);
     }
 });
 
-},{"../Literal":89,"./String.less":94,"subview":25}],94:[function(require,module,exports){
+},{"../Literal":92,"./String.less":97,"subview":28}],97:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-String{color:#1B1BD3;background:#FDFDAA;display:inline;padding:.2em}.string-input{line-height:1em}.string-input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],95:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 var Literal = require('../Literal');
 
 require('./Var.less');
@@ -5675,11 +6166,20 @@ module.exports = Literal.extend('Code-Var', {
     },
     focus: function() {
         this.$name.focus();
+    },
+    dump: function() {
+        return {
+            type:  this.type,
+            value: this.$name.html()
+        };
+    },
+    load: function(content) {
+        this.$name.html(content.val);
     }
 });
-},{"../Literal":89,"./Var.less":96}],96:[function(require,module,exports){
+},{"../Literal":92,"./Var.less":99}],99:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Var{background:#A6FF94;color:#1F1F1F;padding:0;line-height:1.3em;margin:.15em}.Code-Var-Input{display:inline-block;min-width:10px;padding:0 5px;background:rgba(255,255,255,.5);text-align:center}.Code-Var-Input:focus{outline:0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],97:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 module.exports = [
     require('./String/String'),
     require('./Number/Number'),
@@ -5688,7 +6188,7 @@ module.exports = [
     require('./Var/Var')
 ];
 
-},{"./Booleans/False":87,"./Booleans/True":88,"./Number/Number":91,"./String/String":93,"./Var/Var":95}],98:[function(require,module,exports){
+},{"./Booleans/False":90,"./Booleans/True":91,"./Number/Number":94,"./String/String":96,"./Var/Var":98}],101:[function(require,module,exports){
 module.exports = require('./Boolean').extend('AND', {
     template: "AND",
     run: function(first, second) {
@@ -5696,16 +6196,16 @@ module.exports = require('./Boolean').extend('AND', {
     }
 });
 
-},{"./Boolean":99}],99:[function(require,module,exports){
+},{"./Boolean":102}],102:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Boolean.less');
 
 module.exports = Operator.extend('Code-Boolean', {
     precedence: 0
 });
-},{"../Operator":123,"./Boolean.less":100}],100:[function(require,module,exports){
+},{"../Operator":126,"./Boolean.less":103}],103:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Boolean{color:#FFF;background:#E97FE0}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],101:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 module.exports = require('./Boolean').extend('Code-NOT', {
     isSingleOperator:   true,
     template:           "NOT",
@@ -5722,7 +6222,7 @@ module.exports = require('./Boolean').extend('Code-NOT', {
     }
 });
 
-},{"./Boolean":99}],102:[function(require,module,exports){
+},{"./Boolean":102}],105:[function(require,module,exports){
 module.exports = require('./Boolean').extend('OR', {
     template: "OR",
     run: function(first, second) {
@@ -5730,7 +6230,7 @@ module.exports = require('./Boolean').extend('OR', {
     }
 });
 
-},{"./Boolean":99}],103:[function(require,module,exports){
+},{"./Boolean":102}],106:[function(require,module,exports){
 module.exports = require('./Boolean').extend('XOR', {
     template: "XOR",
     run: function(first, second) {
@@ -5738,7 +6238,7 @@ module.exports = require('./Boolean').extend('XOR', {
     }
 });
 
-},{"./Boolean":99}],104:[function(require,module,exports){
+},{"./Boolean":102}],107:[function(require,module,exports){
 module.exports = [
     require('./AND'),
     require('./OR'),
@@ -5746,16 +6246,16 @@ module.exports = [
     require('./NOT')
 ];
 
-},{"./AND":98,"./NOT":101,"./OR":102,"./XOR":103}],105:[function(require,module,exports){
+},{"./AND":101,"./NOT":104,"./OR":105,"./XOR":106}],108:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Comparator.less');
 
 module.exports = Operator.extend('Code-Comparator', {
     precedence: 1
 });
-},{"../Operator":123,"./Comparator.less":106}],106:[function(require,module,exports){
+},{"../Operator":126,"./Comparator.less":109}],109:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Comparator{color:#FFF;background:rgba(0,0,0,.75)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],107:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 module.exports = require('./Comparator').extend('Equals', {
     template: "=",
     run: function(first, second) {
@@ -5763,7 +6263,7 @@ module.exports = require('./Comparator').extend('Equals', {
     }
 });
 
-},{"./Comparator":105}],108:[function(require,module,exports){
+},{"./Comparator":108}],111:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThan', {
     template: ">",
     run: function(first, second) {
@@ -5771,7 +6271,7 @@ module.exports = require('./Comparator').extend('GreaterThan', {
     }
 });
 
-},{"./Comparator":105}],109:[function(require,module,exports){
+},{"./Comparator":108}],112:[function(require,module,exports){
 module.exports = require('./Comparator').extend('GreaterThanEquals', {
     template: "&ge;",
     run: function(first, second) {
@@ -5779,14 +6279,14 @@ module.exports = require('./Comparator').extend('GreaterThanEquals', {
     }
 });
 
-},{"./Comparator":105}],110:[function(require,module,exports){
+},{"./Comparator":108}],113:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThan', {
     template: "<",
     run: function(first, second) {
         return first < second;
     }
 });
-},{"./Comparator":105}],111:[function(require,module,exports){
+},{"./Comparator":108}],114:[function(require,module,exports){
 module.exports = require('./Comparator').extend('LessThanEquals', {
     template: "&le;",
     run: function(first, second) {
@@ -5794,7 +6294,7 @@ module.exports = require('./Comparator').extend('LessThanEquals', {
     }
 });
 
-},{"./Comparator":105}],112:[function(require,module,exports){
+},{"./Comparator":108}],115:[function(require,module,exports){
 module.exports = [
     require('./GreaterThan'),
     require('./GreaterThanEquals'),
@@ -5802,7 +6302,7 @@ module.exports = [
     require('./LessThanEquals'),
     require('./LessThan')
 ];
-},{"./Equals":107,"./GreaterThan":108,"./GreaterThanEquals":109,"./LessThan":110,"./LessThanEquals":111}],113:[function(require,module,exports){
+},{"./Equals":110,"./GreaterThan":111,"./GreaterThanEquals":112,"./LessThan":113,"./LessThanEquals":114}],116:[function(require,module,exports){
 module.exports = require('./Math').extend('Divide', {
     template: "&frasl;",
     precedence: 3,
@@ -5811,22 +6311,22 @@ module.exports = require('./Math').extend('Divide', {
     }
 });
 
-},{"./Math":115}],114:[function(require,module,exports){
+},{"./Math":118}],117:[function(require,module,exports){
 module.exports = require('./Math').extend('Exp', {
     template: "^",
     precedence: 4,
     run: Math.pow
 });
-},{"./Math":115}],115:[function(require,module,exports){
+},{"./Math":118}],118:[function(require,module,exports){
 var Operator = require('../Operator');
 require('./Math.less');
 
 module.exports = Operator.extend('Code-Math', {
     
 });
-},{"../Operator":123,"./Math.less":116}],116:[function(require,module,exports){
+},{"../Operator":126,"./Math.less":119}],119:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Code-Math{color:#FFF;background:#FFA45C}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],117:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 module.exports = require('./Math').extend('Minus', {
     template: "-",
     precedence: function(stack, i) {
@@ -5864,7 +6364,7 @@ module.exports = require('./Math').extend('Minus', {
     }
 });
 
-},{"./Math":115}],118:[function(require,module,exports){
+},{"./Math":118}],121:[function(require,module,exports){
 var _ = require('underscore');
 
 module.exports = require('./Math').extend('Code-MinusMinus', {
@@ -5890,7 +6390,7 @@ module.exports = require('./Math').extend('Code-MinusMinus', {
     }
 });
 
-},{"./Math":115,"underscore":26}],119:[function(require,module,exports){
+},{"./Math":118,"underscore":29}],122:[function(require,module,exports){
 module.exports = require('./Math').extend('Multiply', {
     template: "&times;",
     precedence: 3,
@@ -5899,7 +6399,7 @@ module.exports = require('./Math').extend('Multiply', {
     }
 });
 
-},{"./Math":115}],120:[function(require,module,exports){
+},{"./Math":118}],123:[function(require,module,exports){
 module.exports = require('./Math').extend('Plus', {
     template: "+",
     precedence: 2,
@@ -5908,7 +6408,7 @@ module.exports = require('./Math').extend('Plus', {
     }
 });
 
-},{"./Math":115}],121:[function(require,module,exports){
+},{"./Math":118}],124:[function(require,module,exports){
 var _ = require('underscore');
 
 module.exports = require('./Math').extend('Code-PlusPlus', {
@@ -5934,7 +6434,7 @@ module.exports = require('./Math').extend('Code-PlusPlus', {
     }
 });
 
-},{"./Math":115,"underscore":26}],122:[function(require,module,exports){
+},{"./Math":118,"underscore":29}],125:[function(require,module,exports){
 module.exports = [
     require('./Exp'),
     require('./Divide'),
@@ -5945,7 +6445,7 @@ module.exports = [
     require('./MinusMinus')
 ];
 
-},{"./Divide":113,"./Exp":114,"./Minus":117,"./MinusMinus":118,"./Multiply":119,"./Plus":120,"./PlusPlus":121}],123:[function(require,module,exports){
+},{"./Divide":116,"./Exp":117,"./Minus":120,"./MinusMinus":121,"./Multiply":122,"./Plus":123,"./PlusPlus":124}],126:[function(require,module,exports){
 require('./Operator.less');
 
 module.exports = require('../Token').extend('Operator', {
@@ -5953,22 +6453,22 @@ module.exports = require('../Token').extend('Operator', {
     tagName: 'span'
 });
 
-},{"../Token":126,"./Operator.less":124}],124:[function(require,module,exports){
+},{"../Token":129,"./Operator.less":127}],127:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Operator{display:inline-block;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;padding:0 6px;line-height:1.3em;margin:.15em 1px}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],125:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 module.exports = require('./Comparators/index').concat(
     require('./Math/index'),
     require('./Boolean/index')
 );
-},{"./Boolean/index":104,"./Comparators/index":112,"./Math/index":122}],126:[function(require,module,exports){
+},{"./Boolean/index":107,"./Comparators/index":115,"./Math/index":125}],129:[function(require,module,exports){
 var subview = require('subview'),
-    cursor  = require('../cursor');
+    cursor  = require('../cursor'),
+    nop     = require('nop');
 
 require('./Token.less');
 
 module.exports = subview('Code-Token', {
     isToken: true,
-    init: function() {},
     meta: {},
     focus: function() {
         this.$wrapper.after(cursor);
@@ -5979,19 +6479,25 @@ module.exports = subview('Code-Token', {
     },
     editor: function() {
         return this.parent('Code');
-    }
+    },
+    dump: function() {
+        return {
+            type: this.type
+        };
+    },
+    load: nop
 });
 
-},{"../Components/error":66,"../cursor":129,"./Token.less":127,"subview":25}],127:[function(require,module,exports){
-module.exports=require(52)
-},{}],128:[function(require,module,exports){
+},{"../Components/error":69,"../cursor":132,"./Token.less":130,"nop":12,"subview":28}],130:[function(require,module,exports){
+module.exports=require(55)
+},{}],131:[function(require,module,exports){
 module.exports = require('./Functions/index').concat(
     require('./Literals/index'),
     require('./Operators/index'),
     require('./Control/index'),
     require('./Assign/Assign')
 );
-},{"./Assign/Assign":70,"./Control/index":78,"./Functions/index":85,"./Literals/index":97,"./Operators/index":125}],129:[function(require,module,exports){
+},{"./Assign/Assign":73,"./Control/index":81,"./Functions/index":88,"./Literals/index":100,"./Operators/index":128}],132:[function(require,module,exports){
 var subview = require('subview');
 
 require('./cursor.less');
@@ -6046,9 +6552,9 @@ var Cursor = subview('Code-Cursor', {
 
 module.exports = Cursor.spawn();
 
-},{"./Components/error":66,"./cursor.less":130,"subview":25}],130:[function(require,module,exports){
+},{"./Components/error":69,"./cursor.less":133,"subview":28}],133:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "@-webkit-keyframes flash{0%,100%{opacity:1}50%{opacity:0}}.subview-Code-Cursor{position:relative;width:2px;height:1.2em;margin:-.1em -1px;top:.25em;background:#1279FC;-webkit-animation:flash 1s infinite}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],131:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 var subview = require('subview'),
     prefix  = require('prefix'),
     $       = require('unopinionate').selector;
@@ -6063,9 +6569,12 @@ module.exports = subview('Slider', {
     speed:          300,
 
     /*** Core Functionality ***/
-    config: function() {
+    once: function() {
         this.$slider = $("<div class='Slider-Slider'>")
             .appendTo(this.$wrapper);
+
+        //Configure Transitions
+        this._setupTransitions();
     },
     render: function() {
         this.panelWidth = 100/this.panels.length;
@@ -6092,19 +6601,7 @@ module.exports = subview('Slider', {
         this.$slider.css('width', (this.panels.length*100) + '%');
     },
     init: function() {
-        var self = this;
-
-        //Show the default panel
         this.show(this.defaultPanel);
-
-        //Configure Transitions
-        this._setupTransitions();
-    },
-    clean: function() {
-        this.panels         = {};
-        this.defaultPanel   = 0;
-        this.$wrapper.html('');
-        this._removeTransitions();
     },
 
     /*** Methods ***/
@@ -6146,9 +6643,9 @@ module.exports = subview('Slider', {
 
 });
 
-},{"./Slider.less":132,"prefix":20,"subview":25,"unopinionate":27}],132:[function(require,module,exports){
+},{"./Slider.less":135,"prefix":22,"subview":28,"unopinionate":30}],135:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Slider{position:relative;width:100%;height:100%;overflow:hidden}.Slider-Slider{position:absolute;left:0;top:0;height:100%;white-space:nowrap}.Slider-Panel{display:inline-block;position:relative;height:100%;vertical-align:top;white-space:normal}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],133:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 var subview     = require('subview'),
     click    = require('onclick');
 
@@ -6156,9 +6653,9 @@ require('./Toolbar.less');
 
 module.exports = subview("Toolbar");
 
-},{"./Toolbar.less":134,"onclick":11,"subview":25}],134:[function(require,module,exports){
+},{"./Toolbar.less":137,"onclick":13,"subview":28}],137:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Toolbar{position:absolute;height:50px;width:100%;background:#F1F0F0;border-bottom:solid 1px #CCC;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box;padding-top:20px;text-align:center;color:#414141}.subview-Toolbar button{color:#2A90FF;border:0;background:0 0;font-size:15px;outline:0;padding:0 5px;height:100%}.subview-Toolbar button:active{color:#BADBFF}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],135:[function(require,module,exports){
+},{}],138:[function(require,module,exports){
 var templater = require("handlebars/runtime").default.template;module.exports = templater(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
@@ -6169,7 +6666,7 @@ helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
   else { helper = (depth0 && depth0.msg); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
   return escapeExpression(stack1);
   });
-},{"handlebars/runtime":10}],136:[function(require,module,exports){
+},{"handlebars/runtime":10}],139:[function(require,module,exports){
 var subview = require('subview'),
     $       = require('unopinionate').selector;
 
@@ -6273,33 +6770,27 @@ module.exports = subview('Tooltip', {
     },
     $arrow: $("<div class='Tooltip-arrow'>")
 });
-},{"./Tooltip.handlebars":135,"./Tooltip.less":137,"subview":25,"unopinionate":27}],137:[function(require,module,exports){
+},{"./Tooltip.handlebars":138,"./Tooltip.less":140,"subview":28,"unopinionate":30}],140:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = ".subview-Tooltip{position:absolute;max-width:100%;max-height:100%;overflow:auto;z-index:1001}.Tooltip-arrow{position:absolute;-webkit-transform:rotate(45deg);-moz-transform:rotate(45deg);-o-transform:rotate(45deg);-ms-transform:rotate(45deg);transform:rotate(45deg);width:12px;height:12px;z-index:1000}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
-},{}],138:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 var Slider = require('./UI/Slider/Slider');
 
 require('./main.less');
 
 module.exports = Slider.extend('main', {
-    init: function() {
-        var self = this;
-
-        this.listenDown({
-            open: function() {
-                self.show('files');
-            },
-            'edit, new': function() {
-                console.log('new');
-                self.show('editor');
-            },
-            run: function(callback) {
-                self.show('run', callback);
-            }
-        });
-
-        this.bind('slide', function() {
+    listeners: {
+        'down:open': function() {
+            this.show('files');
+        },
+        'down:new, down:openFile, down:edit': function() {
+            this.show('editor');
+        },
+        'down:run': function(callback) {
+            this.show('run', callback);
+        },
+        'self:slide': function() {
             $(":focus").blur();
-        });
+        }
     },
     panels: [
         {
@@ -6318,6 +6809,6 @@ module.exports = Slider.extend('main', {
     defaultPanel: 'files'
 });
 
-},{"./Editor/Editor":29,"./Files/Files":43,"./Run/Run":49,"./UI/Slider/Slider":131,"./main.less":139}],139:[function(require,module,exports){
+},{"./Editor/Editor":32,"./Files/Files":46,"./Run/Run":52,"./UI/Slider/Slider":134,"./main.less":142}],142:[function(require,module,exports){
 (function() { var head = document.getElementsByTagName('head')[0]; style = document.createElement('style'); style.type = 'text/css';var css = "body,html{height:100%;width:100%}body{-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-o-user-select:none;user-select:none;margin:0;position:absolute;font-family:Avenir,\"Helvetica Neue\",Helvetica,sans-serif;-webkit-tap-highlight-color:rgba(0,0,0,0)}";if (style.styleSheet){ style.styleSheet.cssText = css; } else { style.appendChild(document.createTextNode(css)); } head.appendChild(style);}())
 },{}]},{},[1])

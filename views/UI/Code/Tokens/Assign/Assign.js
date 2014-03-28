@@ -34,5 +34,16 @@ module.exports = Token.extend('Code-Assign', {
     },
     focus: function() {
         this.name.focus();
+    },
+    dump: function() {
+        return {
+            type:  this.type,
+            name:  this.name.dump(),
+            value: this.value.dump()
+        };
+    },
+    load: function(content) {
+        this.name.load(content.name);
+        this.value.load(content.value);
     }
 });

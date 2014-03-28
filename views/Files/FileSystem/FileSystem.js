@@ -6,20 +6,29 @@ var subview  = require('subview'),
 require('./FileSystem.less');
 
 module.exports = subview('FileSystem', {
+    once: function() {
+        var self = this;
+
+        click('.FileSystem-file', function() {
+            self.trigger('openFile', [this.getAttribute('data-name')]);
+        });
+
+        /*
+        programs.bind('update', function() {
+            self.render();
+        });
+        */
+    },
     init: function() {
         var self = this;
 
         programs.ready(function() {
             self.render();
         });
-
-        click('.FileSystem-file', function() {
-            self.trigger('openFile', [this.getAttribute('data-name')]);
-        });
     },
     data: function() {
         return {
-            programs: _.map(programs.list(), function(item) {
+            programs: _.map(programs.list().sort(), function(item) {
                 return {
                     name: item.name.replace(/\.[a-zA-Z]+$/, ''),
                     path: item.name

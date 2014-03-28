@@ -1,9 +1,9 @@
 var Block       = require('./Components/Block'),
-    Environment = require('./Components/EnvironmentModel');
+    Environment = require('./Components/EnvironmentModel'),
+    _           = require('underscore'),
+    noop        = require('nop');
 
 require('./Code.less');
-
-var noop = function() {};
 
 module.exports = Block.extend('Code', {
     listeners: {
@@ -26,6 +26,11 @@ module.exports = Block.extend('Code', {
     },
     kill: function() {
         this.running = false;
+    },
+    dump: function() {
+        return _.extend(this.super.dump.apply(this), {
+            version: "0.0.1"
+        });
     },
 
     /*** Events ***/

@@ -25,5 +25,14 @@ module.exports = Literal.extend('Code-Var', {
     },
     focus: function() {
         this.$name.focus();
+    },
+    dump: function() {
+        return {
+            type:  this.type,
+            value: this.$name.html()
+        };
+    },
+    load: function(content) {
+        this.$name.html(content.val);
     }
 });

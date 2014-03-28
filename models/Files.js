@@ -1,11 +1,19 @@
-var _ = require('underscore');
+var _   = require('underscore'),
+    log = require('loglevel');
 
 var Files = function(config) {
     var self = this;
     config = config || {};
 
     /*** Configure ***/
-    this.extension = config.extension || null;
+    this.extension = "." + config.extension || "";
+
+    var pass = function(value) {
+        return value;
+    };
+
+    this.encode = config.encode || pass;
+    this.decode = config.decode || pass;
 
     /*** Initialize ***/
     setTimeout(function() {
@@ -20,38 +28,45 @@ Files.prototype = {
 
     /*** Public Methods ***/
     init: function() {
-        var self = this;
+        var self = this,
+            requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
 
-        window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+        if(requestFileSystem) {
+            if(window.navigator.webkitPersistentStorage) {
+                window.navigator.webkitPersistentStorage.requestQuota(1024*1024*5, createFileSytem, log.error);
+            }
+            else {
+                createFileSytem();
+            }
+        }
+        else {
+            log.warn("No local file system");
+        }
 
-        if(window.requestFileSystem) {
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs) {
+        function createFileSytem(grantedBytes) {
+            var type = window.LocalFileSystem ? window.LocalFileSystem.PERSISTENT : window.PERSISTENT,
+                size = grantedBytes || 0;
+
+            requestFileSystem(type, size, function(fs) {
                 self.root = fs.root;
-                console.log(fs);
                 self.directory = fs.root.createReader();
 
                 self.sync(function() {
                     self._fireReady();
                 });
-            }, console.error);
-        }
-        else {
-            console.warn("No local file system");
+            }, log.error);
         }
     },
     sync: function(callback) {
         var self  = this,
-            regex = new RegExp("[a-z_ -]+\\."+this.extension, "i");
+            regex = new RegExp("[a-z_ -]+\\"+this.extension, "i");
 
         this.directory.readEntries(function(data) {
-            console.log(data);
             self.data = _.filter(data, function(file) {
-                console.log(file.name);
-                console.log(regex);
                 return file.name.match(regex);
             });
             callback();
-        }, console.error);
+        }, log.error);
 
         return this;
     },
@@ -59,32 +74,41 @@ Files.prototype = {
         return this.data || [];
     },
     get: function(name, callback) {
-        this.root.getFile(name, {}, function(fileEntry) {
+        var self = this;
+
+        this.root.getFile(name + this.extension, {}, function(fileEntry) {
             fileEntry.file(function(file) {
                 var reader = new FileReader();
 
                 reader.onloadend = function(e) {
-                    callback(JSON.parse(this.result));
+                    callback(self.decode(this.result));
                 };
 
                 reader.readAsText(file);
-            }, console.error);
-        }, console.error);
+            }, log.error);
+        }, log.error);
     },
     set: function(name, content) {
         var self = this;
-        name = name + (this.extension ? "." + this.extension : "");
+        name = name + this.extension;
 
+        //Add To Data Cache
+        if(this.data.indexOf(name) == -1) {
+            this.data.push(name);
+        }
+        
         this.root.getFile(name, {create: true}, function(file) {
             file.createWriter(function(fileWriter) {
                 fileWriter.onerror = function(e) {
-                    console.error('Write failed: ' + e.toString());
+                    log.error('Write failed: ' + e.toString());
                 };
 
-                fileWriter.write(new Blob([JSON.stringify(content)], {type: 'text/touchscript'}));
+                fileWriter.write(new Blob([self.encode(content)], {
+                    type: 'text/touchscript'
+                }));
 
-            }, console.error);
-        }, console.error);
+            }, log.error);
+        }, log.error);
     },
     ready: function(callback) {
         this._readyFuncs.push(callback);

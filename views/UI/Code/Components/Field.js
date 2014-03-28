@@ -1,6 +1,7 @@
 var subview = require('subview'),
     cursor  = require('../cursor'),
-    click   = require('onclick');
+    click   = require('onclick'),
+    _       = require('underscore');
 
 require('./Field.less');
 
@@ -9,12 +10,12 @@ click('.subview-Code-Field', function(e) {
 });
 
 module.exports = subview('Code-Field', {
-    dump: function() {
-
-    },
     focus: function() {
         cursor.appendTo(this.$wrapper);
         return this;
+    },
+    $getTokens: function() {
+        return this.$wrapper.children('.subview-Code-Token');
     },
     run: function(callback) {
         var stack = [],
@@ -23,7 +24,7 @@ module.exports = subview('Code-Field', {
             next;
 
         //Get Tokens
-        var $tokens = this.$wrapper.children('.subview-Code-Token');
+        var $tokens = this.$getTokens();
 
         //Ignore Empty Lines
         if($tokens.length === 0) {
@@ -128,5 +129,25 @@ module.exports = subview('Code-Field', {
             return stack[0];
         }
     },
-    error: require('./error')
+    error: require('./error'),
+    dump: function() {
+        return {
+            type:   this.type,
+            tokens: _.map(this.$getTokens(), function(token) {
+                return subview(token).dump();
+            })
+        };
+    },
+    load: function(file) {
+        for(var i=0; i<file.tokens; i++) {
+            var token = subview.lookup(tokens[i].type);
+            token.spawn();
+
+            if(token.content) {
+                token.load(token.content);
+            }
+
+            this.$wrapper.append(token.$wrapper);
+        }
+    }
 });

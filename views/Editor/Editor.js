@@ -8,11 +8,14 @@ require('./Editor.less');
 module.exports = subview('Editor', {
     listeners: {
         'all:open, all:save': function() {
+            console.log(code.dump());
             programs.set(toolbar.getName(), code.dump());
         },
         'all:openFile': function(fileName) {
             toolbar.setName(fileName);
-            code.load(programs.get(fileName));
+            programs.get(fileName, function(file) {
+                code.load(file);
+            });
         },
         'all:new': function() {
             code.empty();

@@ -18,5 +18,14 @@ module.exports = Literal.extend('Code-Number', {
     },
     val: function() {
         return parseFloat(this.$input.val(), 10);
+    },
+    dump: function() {
+        return {
+            type:  this.type,
+            value: this.val()
+        };
+    },
+    load: function(content) {
+        this.$input.val(content.val);
     }
 });

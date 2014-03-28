@@ -1,11 +1,11 @@
 var subview = require('subview'),
-    cursor  = require('../cursor');
+    cursor  = require('../cursor'),
+    nop     = require('nop');
 
 require('./Token.less');
 
 module.exports = subview('Code-Token', {
     isToken: true,
-    init: function() {},
     meta: {},
     focus: function() {
         this.$wrapper.after(cursor);
@@ -16,5 +16,11 @@ module.exports = subview('Code-Token', {
     },
     editor: function() {
         return this.parent('Code');
-    }
+    },
+    dump: function() {
+        return {
+            type: this.type
+        };
+    },
+    load: nop
 });

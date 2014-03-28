@@ -7,7 +7,7 @@ module.exports = Slider.extend('main', {
         'down:open': function() {
             this.show('files');
         },
-        'down:new, down:edit': function() {
+        'down:new, down:openFile, down:edit': function() {
             this.show('editor');
         },
         'down:run': function(callback) {

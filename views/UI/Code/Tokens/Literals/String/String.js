@@ -20,5 +20,14 @@ module.exports = Literal.extend('Code-String', {
     },
     val: function() {
         return this.$input.text();
+    },
+    dump: function() {
+        return {
+            type:  this.type,
+            value: this.val()
+        };
+    },
+    load: function(content) {
+        this.$input.html(content.val);
     }
 });

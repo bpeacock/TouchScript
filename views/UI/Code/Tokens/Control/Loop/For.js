@@ -43,5 +43,14 @@ module.exports = Control.extend('Code-For', {
     },
     focus: function() {
         this.condition.focus();
+    },
+    dump: function() {
+        return {
+            type: this.type,
+            
+        };
+    },
+    load: function(content) {
+
     }
 });

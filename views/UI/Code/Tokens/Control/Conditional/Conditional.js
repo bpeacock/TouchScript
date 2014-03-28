@@ -1,6 +1,7 @@
 var Control  = require('../Control'),
     Argument = require('../../Argument'),
-    Block    = require('../../../Components/Block');
+    Block    = require('../../../Components/Block'),
+    _        = require('underscore');
 
 require('./Conditional.less');
 
@@ -77,5 +78,20 @@ module.exports = Control.extend('Code-Conditional', {
     },
     focus: function() {
         this.conditions[0].arg.focus();
+    },
+    dump: function() {
+        return {
+            type: this.type,
+            conditions: _.map(this.conditions, function(condition) {
+                return {
+                    block: condition.block.dump(),
+                    arg:   condition.arg.dump()
+                };
+            }),
+            elseCondition: this.elseCondition.block.dump()
+        };
+    },
+    load: function(content) {
+
     }
 });

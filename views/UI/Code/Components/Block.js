@@ -1,6 +1,7 @@
 var subview     = require('subview'),
     cursor      = require('../cursor'),
-    Line        = require('./Line');
+    Line        = require('./Line'),
+    _           = require('underscore');
 
 require('./Block.less');
 
@@ -25,8 +26,13 @@ module.exports = subview('Code-Block', {
 
         return this;
     },
-    addLine: function(i) {
+    addLine: function(content) {
         var line = Line.spawn();
+
+        if(content) {
+            line.load(content);
+        }
+
         this.$wrapper.append(line.$wrapper);
         return line;
     },
@@ -55,9 +61,17 @@ module.exports = subview('Code-Block', {
         return this;
     },
     dump: function() {
-        
+        return {
+            type:  this.type,
+            lines: _.map(this.$wrapper.children('.subview-Code-Line'), function(child) {
+                return subview(child).dump();
+            })
+        };
     },
-    load: function() {
-        
+    load: function(file) {
+        console.log(file);
+        for(var i=0; i<file.lines.length; i++) {
+            this.addLine(file.lines[i]);
+        }
     }
 });
