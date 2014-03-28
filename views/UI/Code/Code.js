@@ -6,15 +6,14 @@ require('./Code.less');
 var noop = function() {};
 
 module.exports = Block.extend('Code', {
+    listeners: {
+        'down:error': function() {
+            this.onError.apply(this, arguments);
+        }
+    },
     init: function() {
-        var self = this;
-
         this.environment = new Environment();
         this.focus();
-
-        this.listenDown('error', function() {
-            self.onError.apply(this, arguments);
-        });
     },
     configure: function(config) {
         this.terminal = config.terminal || null;

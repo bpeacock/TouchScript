@@ -3,25 +3,19 @@ var Slider = require('./UI/Slider/Slider');
 require('./main.less');
 
 module.exports = Slider.extend('main', {
-    init: function() {
-        var self = this;
-
-        this.listenDown({
-            open: function() {
-                self.show('files');
-            },
-            'edit, new': function() {
-                console.log('new');
-                self.show('editor');
-            },
-            run: function(callback) {
-                self.show('run', callback);
-            }
-        });
-
-        this.bind('slide', function() {
+    listeners: {
+        'down:open': function() {
+            this.show('files');
+        },
+        'down:new, down:edit': function() {
+            this.show('editor');
+        },
+        'down:run': function(callback) {
+            this.show('run', callback);
+        },
+        'self:slide': function() {
             $(":focus").blur();
-        });
+        }
     },
     panels: [
         {

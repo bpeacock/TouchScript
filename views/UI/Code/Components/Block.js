@@ -5,20 +5,19 @@ var subview     = require('subview'),
 require('./Block.less');
 
 module.exports = subview('Code-Block', {
-    init: function() {
-        var self = this;
-
-        this.empty();
-
-        this.listenDown('Code-Cursor:paste', function() {
-            var last = subview(self.$wrapper.children().last());
+    listeners: {
+        'down:paste:Code-Cursor': function() {
+            var last = subview(this.$wrapper.children().last());
 
             if(!last.isEmpty()) {
-                self.addLine();
+                this.addLine();
             }
 
             return false;
-        });
+        }
+    },
+    init: function() {
+        this.empty();
     },
     empty: function() {
         this.html('');

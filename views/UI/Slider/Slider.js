@@ -12,9 +12,12 @@ module.exports = subview('Slider', {
     speed:          300,
 
     /*** Core Functionality ***/
-    config: function() {
+    once: function() {
         this.$slider = $("<div class='Slider-Slider'>")
             .appendTo(this.$wrapper);
+
+        //Configure Transitions
+        this._setupTransitions();
     },
     render: function() {
         this.panelWidth = 100/this.panels.length;
@@ -41,19 +44,7 @@ module.exports = subview('Slider', {
         this.$slider.css('width', (this.panels.length*100) + '%');
     },
     init: function() {
-        var self = this;
-
-        //Show the default panel
         this.show(this.defaultPanel);
-
-        //Configure Transitions
-        this._setupTransitions();
-    },
-    clean: function() {
-        this.panels         = {};
-        this.defaultPanel   = 0;
-        this.$wrapper.html('');
-        this._removeTransitions();
     },
 
     /*** Methods ***/

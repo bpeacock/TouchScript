@@ -6,23 +6,21 @@ var subview = require('subview'),
 require('./Editor.less');
 
 module.exports = subview('Editor', {
-    init: function() {
-        this.listen('open, save', function() {
+    listeners: {
+        'all:open, all:save': function() {
             programs.set(toolbar.getName(), code.dump());
-        });
-
-        this.listen('openFile', function(fileName) {
+        },
+        'all:openFile': function(fileName) {
             toolbar.setName(fileName);
             code.load(programs.get(fileName));
-        });
-
-        this.listen('new', function() {
+        },
+        'all:new': function() {
             code.empty();
 
             setTimeout(function() {
                 toolbar.focusName();
             }, 300);
-        });
+        }
     },
     template: require('./Editor.handlebars'),
     subviews: {
