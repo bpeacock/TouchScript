@@ -6,6 +6,9 @@ module.exports = require('../Token').extend('Code-Control', {
     /*** Should Be Overwritten ***/
     run:    function() {},
     focus:  function() {},
+    clean:  function() {
+        this.html('');
+    },
 
     /*** Functions ***/
     validatePosition: function(cursor) {

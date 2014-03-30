@@ -1,7 +1,8 @@
 var subview  = require('subview'),
     click    = require('onclick'),
     _        = require('underscore'),
-    programs = require("../../../models/programs");
+    programs = require("../../../models/programs"),
+    transitionComplete = require('transition-complete');
 
 require('./FileSystem.less');
 
@@ -13,11 +14,11 @@ module.exports = subview('FileSystem', {
             self.trigger('openFile', [this.getAttribute('data-name')]);
         });
 
-        /*
-        programs.bind('update', function() {
-            self.render();
+        programs.bind('add, remove', function() {
+            transitionComplete(function() {
+                self.render();
+            });
         });
-        */
     },
     init: function() {
         var self = this;

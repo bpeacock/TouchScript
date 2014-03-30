@@ -28,6 +28,6 @@ module.exports = Literal.extend('Code-String', {
         };
     },
     load: function(content) {
-        this.$input.html(content.val);
+        this.$input.html(content.value);
     }
 });

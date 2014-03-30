@@ -43,7 +43,7 @@ module.exports = subview('Tray', {
             var Button = buttons[i];
 
             data.push({
-                name: Button.View.prototype.meta.display || Button.View.prototype.template,
+                name: Button.Subview.prototype.meta.display || Button.Subview.prototype.template,
                 type: Button.type
             });
         }

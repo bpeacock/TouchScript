@@ -25,6 +25,9 @@ module.exports = require('../Token').extend('Function', {
         
         this.$wrapper.append(")");
     },
+    clean: function() {
+        this.html('');
+    },
 
     /*** Should Be Overwritten ***/
     name: '',

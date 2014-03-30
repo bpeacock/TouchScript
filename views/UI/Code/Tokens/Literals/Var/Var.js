@@ -33,6 +33,6 @@ module.exports = Literal.extend('Code-Var', {
         };
     },
     load: function(content) {
-        this.$name.html(content.val);
+        this.$name.html(content.value);
     }
 });

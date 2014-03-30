@@ -1,7 +1,7 @@
 var Block       = require('./Components/Block'),
     Environment = require('./Components/EnvironmentModel'),
     _           = require('underscore'),
-    noop        = require('nop');
+    nop         = require('nop');
 
 require('./Code.less');
 
@@ -34,5 +34,5 @@ module.exports = Block.extend('Code', {
     },
 
     /*** Events ***/
-    onError: noop
+    onError: nop
 });

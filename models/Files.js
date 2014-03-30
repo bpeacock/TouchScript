@@ -22,6 +22,7 @@ var Files = function(config) {
 
     //Ready Functions
     this._readyFuncs = [];
+    this._bindings   = {};
 };
 
 Files.prototype = {
@@ -65,6 +66,7 @@ Files.prototype = {
             self.data = _.filter(data, function(file) {
                 return file.name.match(regex);
             });
+
             callback();
         }, log.error);
 
@@ -93,8 +95,9 @@ Files.prototype = {
         name = name + this.extension;
 
         //Add To Data Cache
-        if(this.data.indexOf(name) == -1) {
-            this.data.push(name);
+        if(!_.findWhere(this.data, {name: name})) {
+            this.data.push({name: name});
+            this.trigger('add');
         }
         
         this.root.getFile(name, {create: true}, function(file) {
@@ -106,9 +109,19 @@ Files.prototype = {
                 fileWriter.write(new Blob([self.encode(content)], {
                     type: 'text/touchscript'
                 }));
-
             }, log.error);
         }, log.error);
+    },
+    remove: function() {
+        var i = this.data.indexOf(name);
+        if(i != -1) {
+            this.data.splice(i, 1);
+            this.trigger('remove');
+
+            this.root.getFile(name, {create: true}, function(file) {
+                file.remove(function() {}, log.error);
+            }, log.error);
+        }
     },
     ready: function(callback) {
         this._readyFuncs.push(callback);
@@ -117,6 +130,29 @@ Files.prototype = {
         var i = this._readyFuncs.length;
         while(i--) {
             this._readyFuncs[i].apply(this, []);
+        }
+    },
+    bind: function(def, callback) {
+        var names = def.split(','),
+            i = names.length;
+
+        while(i--) {
+            var name = names[i].replace(/ /g, '');
+
+            if(this._bindings[name]) {
+                this._bindings[name].push(callback);
+            }
+            else {
+                this._bindings[name] = [callback];
+            }
+        }
+    },
+    trigger: function(name) {
+        var bindings = this._bindings[name];
+        if(bindings) {
+            for(var i=0; i<bindings.length; i++) {
+                bindings[i]();
+            }
         }
     }
 };

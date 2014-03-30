@@ -24,6 +24,9 @@ module.exports = Token.extend('Code-Assign', {
             .append(' &rArr; ')
             .append(this.value.$wrapper);
     },
+    clean: function() {
+        this.html('');
+    },
     meta: {
         display: "&rArr;"
     },
@@ -43,6 +46,7 @@ module.exports = Token.extend('Code-Assign', {
         };
     },
     load: function(content) {
+        console.log(content);
         this.name.load(content.name);
         this.value.load(content.value);
     }

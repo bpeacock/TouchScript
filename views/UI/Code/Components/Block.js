@@ -20,12 +20,6 @@ module.exports = subview('Code-Block', {
     init: function() {
         this.empty();
     },
-    empty: function() {
-        this.html('');
-        this.addLine();
-
-        return this;
-    },
     addLine: function(content) {
         var line = Line.spawn();
 
@@ -38,7 +32,6 @@ module.exports = subview('Code-Block', {
     },
     focus: function() {
         subview(this.$wrapper.children().last()).focus();
-        return this;
     },
     beforeRun: function() {},
     run: function() {
@@ -57,8 +50,6 @@ module.exports = subview('Code-Block', {
                 }
             });
         })();
-
-        return this;
     },
     dump: function() {
         return {
@@ -68,8 +59,14 @@ module.exports = subview('Code-Block', {
             })
         };
     },
+    empty: function() {
+        this.html('');
+        this.addLine();
+    },
     load: function(file) {
+        this.html('');
         console.log(file);
+        
         for(var i=0; i<file.lines.length; i++) {
             this.addLine(file.lines[i]);
         }

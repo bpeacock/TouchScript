@@ -26,6 +26,6 @@ module.exports = Literal.extend('Code-Number', {
         };
     },
     load: function(content) {
-        this.$input.val(content.val);
+        this.$input.val(content.value);
     }
 });

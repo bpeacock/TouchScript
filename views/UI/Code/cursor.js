@@ -22,7 +22,7 @@ var Cursor = subview('Code-Cursor', {
         }
 
         //Validate Position
-        if(Type.View.prototype.validatePosition(this)) {
+        if(Type.Subview.prototype.validatePosition(this)) {
 
             //Paste the function
             var command = Type.spawn();

@@ -139,13 +139,11 @@ module.exports = subview('Code-Field', {
         };
     },
     load: function(file) {
-        for(var i=0; i<file.tokens; i++) {
-            var token = subview.lookup(tokens[i].type);
-            token.spawn();
+        for(var i=0; i<file.tokens.length; i++) {
+            var token = subview.lookup(file.tokens[i].type);
 
-            if(token.content) {
-                token.load(token.content);
-            }
+            token = token.spawn();
+            token.load(file.tokens[i]);
 
             this.$wrapper.append(token.$wrapper);
         }

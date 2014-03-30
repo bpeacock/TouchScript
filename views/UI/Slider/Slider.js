@@ -25,7 +25,7 @@ module.exports = subview('Slider', {
         //Build the panels
         for(var i=0; i<this.panels.length; i++) {
             var panel = this.panels[i],
-                subview = panel.content.isViewPool ? panel.content.spawn() : panel.content;
+                subview = panel.content.isSubviewPool ? panel.content.spawn() : panel.content;
 
             //Configure the Panel
             panel.content   = subview;
