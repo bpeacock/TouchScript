@@ -9,6 +9,7 @@ Installation:
 npm install
 npm install ../on3/onDrag
 sudo npm install -g phonegap
+sudo npm install ios-sim -g
 ```
 
 Make sure that you have XCode Installed.
