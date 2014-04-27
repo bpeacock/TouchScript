@@ -40,4 +40,12 @@ Thumbs.db
 ##############
 node_modules/
 
+# Generated Files #
+###################
+PhoneGap/platforms
+PhoneGap/plugins
+examples/build.js
+test/build.js
+PhoneGap/www/js/build.js
+
 

@@ -18,6 +18,8 @@ Development
 
 To Build: `grunt build`
 
+Note that the first phonegap build might fail, just run `grunt build` again.
+
 To Serve (should be used for browser debugging for file APIs):
 ```bash
 npm install -g http-server

@@ -42,8 +42,8 @@ module.exports = function(grunt) {
         },
         shell: {
             phonegap: {
-                command: "cd PhoneGap; phonegap run ios",
-                options: {                      // Options
+                command: "cd PhoneGap; sh build.sh",
+                options: {
                     stdout: true
                 }
             }
