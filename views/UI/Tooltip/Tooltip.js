@@ -10,10 +10,8 @@ var arrowSpace  = 10,
     margin      = 5;
 
 module.exports = subview('Tooltip', {
-    config: function(config) {
-        this.msg = config.msg;
-    },
     init: function(config) {
+        console.log(config);
         var $el = config.$el,
             $constrain = config.$constrain || $body; //Constraint should always have relative or absolute positioning
 
@@ -83,8 +81,6 @@ module.exports = subview('Tooltip', {
         else {
             this.$wrapper.css('left', centerLeft);
         }
-        
-        
     },
     clean: function() {
         this.$arrow.detach();
@@ -94,9 +90,9 @@ module.exports = subview('Tooltip', {
             .css('right', 'auto');
     },
     template: require('./Tooltip.handlebars'),
-    data: function() {
+    data: function(config) {
         return {
-            msg: this.msg
+            msg: config.msg
         };
     },
     $arrow: $("<div class='Tooltip-arrow'>")

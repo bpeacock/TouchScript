@@ -71,5 +71,9 @@ module.exports = function(grunt) {
         'browserify:dist',
         'phonegap'
     ]);
+
+    grunt.registerTask('default', [
+        'build'
+    ]);
 };
 

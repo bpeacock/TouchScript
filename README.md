@@ -24,6 +24,8 @@ npm install -g http-server
 http-server
 ```
 
+Example at: [http://localhost:8080/examples/index.html](http://localhost:8080/examples/index.html)
+
 To Develop: `grunt watch`
 
 To Test: `npm test`
