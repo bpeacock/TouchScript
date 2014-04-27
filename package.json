@@ -4,6 +4,7 @@
   "version": "",
   "author": "",
   "main": "src/main.js",
+  "private": true,
   "repository": {
     "type": "git",
     "url": ""
